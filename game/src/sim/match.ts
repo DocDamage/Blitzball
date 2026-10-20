@@ -92,7 +92,7 @@ import {
   type Technique,
   type TechniqueKind,
 } from "./types";
-import { add, clampBox, dist, distToSegment, dot, isZero, len, normalize, scale, sub, v3, type Vec3 } from "./vec";
+import { add, clampBox, dist, distToSegment, dot, isZero, len, normalize, scale, sub, type Vec3, v3 } from "./vec";
 
 export interface MatchOptions {
   seed: number;
@@ -127,7 +127,10 @@ export class Match {
     this.halfSeconds = opts.halfSeconds ?? DEFAULT_HALF_SECONDS;
     this.overtime = opts.overtime ?? false;
     this.overtimeSeconds = opts.overtimeSeconds ?? DEFAULT_OVERTIME_SECONDS;
-    this.ai = [resolveAiProfile(home.personality, opts.difficulty), resolveAiProfile(away.personality, opts.difficulty)];
+    this.ai = [
+      resolveAiProfile(home.personality, opts.difficulty),
+      resolveAiProfile(away.personality, opts.difficulty),
+    ];
 
     const players: PlayerState[] = [];
     for (const team of [0, 1] as const) {

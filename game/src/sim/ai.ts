@@ -34,7 +34,7 @@ import { FORMATIONS } from "./formations";
 import type { PlayerIntent } from "./input";
 import type { Match } from "./match";
 import type { Personality, PlayerState, Technique, TechniqueKind } from "./types";
-import { add, dist, dot, normalize, scale, sub, v3, type Vec3 } from "./vec";
+import { add, dist, dot, normalize, scale, sub, type Vec3, v3 } from "./vec";
 
 export interface Difficulty {
   /** Ticks between decisions for each player (reaction delay). */
@@ -76,7 +76,12 @@ const PERSONALITY: Record<Personality, Weights> = {
 };
 
 export function resolveAiProfile(personality?: Personality, difficulty?: DifficultyId | Difficulty): TeamAiProfile {
-  const d = difficulty === undefined ? DIFFICULTIES.normal : typeof difficulty === "string" ? DIFFICULTIES[difficulty] : difficulty;
+  const d =
+    difficulty === undefined
+      ? DIFFICULTIES.normal
+      : typeof difficulty === "string"
+        ? DIFFICULTIES[difficulty]
+        : difficulty;
   return { personality: personality ?? "balanced", difficulty: d };
 }
 
@@ -258,7 +263,10 @@ function carrierIntent(m: Match, p: PlayerState, profile: TeamAiProfile): Player
     return { moveTo: p.pos, sprint: false, action: { kind: "pass", targetId: bestPass.id } };
   }
   if (sq > AI_SHOT_MIN_QUALITY && shootU >= passU && shootU >= dribbleU) {
-    return { sprint: false, action: { kind: "shoot", aim: bestShotAim(m, p), techniqueId: pickTechnique(m, p, "shot", w)?.id } };
+    return {
+      sprint: false,
+      action: { kind: "shoot", aim: bestShotAim(m, p), techniqueId: pickTechnique(m, p, "shot", w)?.id },
+    };
   }
   if (bestPass && bestPq > 0.3 && passU > dribbleU) {
     return {
@@ -316,7 +324,12 @@ function defendIntent(m: Match, p: PlayerState, profile: TeamAiProfile): PlayerI
       const at = m.effectiveStats(p).at;
       const en = m.effectiveStats(carrier).en;
       const u = (at / (at + en)) * w.tackle * (0.6 + 0.4 * (p.hp / p.maxHp)) + noise(m, profile);
-      if (u > 0.33) return { moveTo: ballPos, sprint: false, action: { kind: "tackle", techniqueId: pickTechnique(m, p, "tackle", w)?.id } };
+      if (u > 0.33)
+        return {
+          moveTo: ballPos,
+          sprint: false,
+          action: { kind: "tackle", techniqueId: pickTechnique(m, p, "tackle", w)?.id },
+        };
     }
     return { moveTo: ballPos, sprint: d > 3 && p.hp > p.maxHp * 0.25 };
   }

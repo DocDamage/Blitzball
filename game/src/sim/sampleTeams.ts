@@ -33,11 +33,16 @@ export const LUCA_GOERS: TeamDef = {
   formation: "attack",
   personality: "aggressive",
   players: [
-    p("bickson", "Bickson", "goers", { hp: 120, en: 6, at: 4, pa: 6, bl: 5, sh: 18, ca: 1, sp: 60 }, ["sphere-shot", "wither-shot"]),
+    p("bickson", "Bickson", "goers", { hp: 120, en: 6, at: 4, pa: 6, bl: 5, sh: 18, ca: 1, sp: 60 }, [
+      "sphere-shot",
+      "wither-shot",
+    ]),
     p("abus", "Abus", "goers", { hp: 110, en: 6, at: 4, pa: 6, bl: 5, sh: 14, ca: 1, sp: 58 }, ["venom-shot"]),
     p("graav", "Graav", "goers", { hp: 130, en: 6, at: 5, pa: 7, bl: 6, sh: 7, ca: 1, sp: 56 }, ["nap-pass"]),
     p("doram", "Doram", "goers", { hp: 150, en: 7, at: 7, pa: 5, bl: 7, sh: 3, ca: 1, sp: 54 }, ["venom-tackle"]),
-    p("balgerda", "Balgerda", "goers", { hp: 140, en: 7, at: 7, pa: 5, bl: 7, sh: 3, ca: 1, sp: 52 }, ["wither-tackle"]),
+    p("balgerda", "Balgerda", "goers", { hp: 140, en: 7, at: 7, pa: 5, bl: 7, sh: 3, ca: 1, sp: 52 }, [
+      "wither-tackle",
+    ]),
     p("raudy", "Raudy", "goers", { hp: 200, en: 5, at: 3, pa: 5, bl: 5, sh: 1, ca: 9, sp: 45 }, ["super-goalie"]),
   ],
 };

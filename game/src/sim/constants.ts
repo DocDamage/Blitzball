@@ -40,19 +40,19 @@ export const FORMATION_SCALE = Object.freeze({ x: 27, y: 17, z: 11 });
 export const KICKOFF_MAX_LOCAL_X = -0.15;
 
 // ---------------------------------------------------------------- movement
-export const BASE_SPEED = 2.0;
-export const SPEED_PER_SP = 0.1; // SP 60 -> 8 units/s
+export const BASE_SPEED = 1.0;
+export const SPEED_PER_SP = 0.05; // SP 60 -> 4 units/s
 export const SPRINT_MULT = 1.4;
 export const CARRY_SPEED_MULT = 0.92;
 /** Speed multiplier at 0 HP (linear up to 1.0 at full HP). */
 export const LOW_HP_SPEED_FLOOR = 0.5;
-export const SPRINT_HP_PER_SECOND = 2.0;
+export const SPRINT_HP_PER_SECOND = 1.5;
 export const ARRIVE_RADIUS = 0.4;
 export const CARRY_OFFSET = 0.7;
 
 // ---------------------------------------------------------------- passing
-export const PASS_BASE_SPEED = 11;
-export const PASS_SPEED_PER_PA = 0.5;
+export const PASS_BASE_SPEED = 7;
+export const PASS_SPEED_PER_PA = 0.3;
 /** Pass power fades linearly with distance travelled down to PASS_MIN_POWER_FRAC. */
 export const PASS_RANGE_FULL = 36;
 export const PASS_MIN_POWER_FRAC = 0.3;
@@ -75,24 +75,24 @@ export const TACKLED_STUN_SECONDS = 0.45;
 export const TACKLE_WHIFF_STUN_SECONDS = 0.7;
 
 // ---------------------------------------------------------------- shooting
-export const SHOT_BASE_SPEED = 15;
-export const SHOT_SPEED_PER_SH = 0.35;
+export const SHOT_BASE_SPEED = 10;
+export const SHOT_SPEED_PER_SH = 0.25;
 export const SHOT_MAX_RANGE = 24;
 export const SHOT_POWER_DECAY_PER_UNIT = 0.6;
 /** Each blocker in reach subtracts BL * spread * this from the shot power. */
-export const SHOT_BLOCK_FACTOR = 0.45;
+export const SHOT_BLOCK_FACTOR = 0.6;
 export const SHOT_MISS_SPREAD = 0.55;
 export const SHOT_ACCURACY_BASE = 6;
 export const SAVE_RADIUS_BASE = 4.0;
 export const SAVE_RADIUS_PER_CA = 0.35;
 /** Keeper CA is multiplied by this in the save contest. */
-export const KEEPER_SAVE_MULT = 1.5;
+export const KEEPER_SAVE_MULT = 1.7;
 export const KEEPER_HOLD_SECONDS = 0.8;
 export const KEEPER_MAX_HOLD_SECONDS = 3.0;
 
 // ---------------------------------------------------------------- contests
-export const CONTEST_SPREAD_MIN = 0.75;
-export const CONTEST_SPREAD_MAX = 1.25;
+export const CONTEST_SPREAD_MIN = 0.65;
+export const CONTEST_SPREAD_MAX = 1.35;
 
 // ---------------------------------------------------------------- statuses
 export const POISON_HP_PER_SECOND = 2.0;
@@ -113,7 +113,7 @@ export const TACKLE_KNOCK_SPEED = 6;
 /** Minimum ticks a receiver keeps the ball before passing it on again. */
 export const AI_MIN_HOLD_TICKS = 75;
 /** The AI only shoots when its 0..1 shot-quality estimate is above this. */
-export const AI_SHOT_MIN_QUALITY = 0.3;
+export const AI_SHOT_MIN_QUALITY = 0.4;
 /** AI aims this far inside the goal corners (y / z). */
 export const AI_SHOT_CORNER_INSET_Y = 2.5;
 export const AI_SHOT_CORNER_INSET_Z = 2.0;
