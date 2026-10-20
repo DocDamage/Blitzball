@@ -81,6 +81,7 @@ export function computeStats(events: readonly MatchEvent[], state: MatchState, t
         pl(e.by).shots++;
         break;
       case "save":
+      case "deflection":
         t[e.team].saves++;
         t[1 - e.team].shotsOnTarget++;
         pl(e.keeper).saves++;
@@ -99,6 +100,11 @@ export function computeStats(events: readonly MatchEvent[], state: MatchState, t
       case "tackle":
         t[e.team].tackles++;
         t[e.team].tacklesWon++;
+        pl(e.by).tackles++;
+        break;
+      case "tackle-miss":
+      case "tackle-evaded":
+        t[e.team].tackles++;
         pl(e.by).tackles++;
         break;
       case "breakthrough":

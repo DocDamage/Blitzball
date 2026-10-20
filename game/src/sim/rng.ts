@@ -33,6 +33,17 @@ export class Rng {
     return lo + Math.floor(this.float() * (hi - lo + 1));
   }
 
+  /** Integer in [0, n-1] like the original Common.GetRandomInRange(maxExclusive = n); 0 when n <= 0. */
+  rand(n: number): number {
+    if (n <= 0) return 0;
+    return Math.floor(this.float() * n);
+  }
+
+  /** rand(100): percent roll. */
+  pct(): number {
+    return this.rand(100);
+  }
+
   /** True with probability p. */
   chance(p: number): boolean {
     return this.float() < p;

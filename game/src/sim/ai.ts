@@ -1,40 +1,44 @@
 /**
- * ai.ts - Utility-based per-player match AI plus team personality/difficulty.
+ * ai.ts - Per-player match AI plus team personality/difficulty.
  *
- * Each AI player re-evaluates its intent every `reactionTicks` ticks (staggered
- * per player) and keeps the previous intent in between, which models reaction
- * delay. Utilities for shooting, passing, dribbling and tackling are computed
- * from the live match geometry and the FFX stat contests, then perturbed by
- * `noise` taken from the match Rng, so everything stays deterministic per seed.
- * Team personalities (plan 5.5) scale the utilities: aggressive (Goers),
- * technical (Psyches), physical (Fangs), balanced.
+ * The ball carrier follows the CPU rules of the original match script
+ * (formulas.md section 8): a zone-based chance to act at all, the dribble
+ * chance when every defender in the encounter could be broken, shoot vs pass
+ * by `rand(PA + w) < w` with the zone shot weight, the shot-range rule, and
+ * passing only when PA beats the blockers' BL. Target selection, support
+ * runs, marking and the keeper are sim rules (formations are not in the
+ * original event). Each AI player re-evaluates every `reactionTicks` ticks
+ * (staggered per player) and keeps its intent in between; utilities are
+ * perturbed by `noise` from the match Rng so everything stays deterministic.
  */
 
 import {
+  AI_ACT_PCT_BY_ZONE,
+  AI_ACT_PCT_SCALE,
+  AI_DRIBBLE_PCT_BY_ZONE,
   AI_KEEPER_TRACK,
   AI_KEEPER_TRACK_CLAMP,
   AI_LANE_CLEAR_DIST,
   AI_MARK_OFFSET,
   AI_MAX_HOLD_TICKS,
   AI_MIN_HOLD_TICKS,
-  AI_PRESS_DISTANCE,
   AI_SHOT_CORNER_INSET_Y,
   AI_SHOT_CORNER_INSET_Z,
-  AI_SHOT_MIN_QUALITY,
+  AI_SHOT_MIN_CHANCE,
+  AI_SHOT_WEIGHT_BY_ZONE,
+  AI_SUPPORT_AHEAD,
+  AI_SUPPORT_SIDE,
   GOAL_HALF_DEPTH,
   GOAL_HALF_HEIGHT,
   KEEPER_HOLD_SECONDS,
-  KEEPER_SAVE_MULT,
   POOL_HALF,
-  SHOT_MAX_RANGE,
-  SHOT_POWER_DECAY_PER_UNIT,
   TICK_RATE,
 } from "./constants";
 import { FORMATIONS } from "./formations";
 import type { PlayerIntent } from "./input";
 import type { Match } from "./match";
 import type { Personality, PlayerState, Technique, TechniqueKind } from "./types";
-import { add, dist, dot, normalize, scale, sub, type Vec3, v3 } from "./vec";
+import { add, dist, normalize, scale, sub, type Vec3, v3 } from "./vec";
 
 export interface Difficulty {
   /** Ticks between decisions for each player (reaction delay). */
@@ -59,8 +63,6 @@ export interface TeamAiProfile {
 interface Weights {
   shoot: number;
   pass: number;
-  dribble: number;
-  tackle: number;
   technique: number;
   /** Probability-like preference for sprinting when not strictly needed. */
   sprint: number;
@@ -69,10 +71,10 @@ interface Weights {
 }
 
 const PERSONALITY: Record<Personality, Weights> = {
-  balanced: { shoot: 1, pass: 1, dribble: 1, tackle: 1, technique: 1, sprint: 0.5, pressers: 1 },
-  aggressive: { shoot: 1.4, pass: 0.85, dribble: 1.1, tackle: 1.3, technique: 1, sprint: 0.8, pressers: 2 },
-  technical: { shoot: 0.9, pass: 1.3, dribble: 0.9, tackle: 0.8, technique: 1.5, sprint: 0.4, pressers: 1 },
-  physical: { shoot: 1, pass: 0.8, dribble: 1.2, tackle: 1.5, technique: 0.7, sprint: 0.9, pressers: 2 },
+  balanced: { shoot: 1, pass: 1, technique: 1, sprint: 0.5, pressers: 2 },
+  aggressive: { shoot: 1.4, pass: 0.85, technique: 1, sprint: 0.8, pressers: 2 },
+  technical: { shoot: 0.9, pass: 1.3, technique: 1.5, sprint: 0.4, pressers: 1 },
+  physical: { shoot: 1, pass: 0.8, technique: 0.7, sprint: 0.9, pressers: 2 },
 };
 
 export function resolveAiProfile(personality?: Personality, difficulty?: DifficultyId | Difficulty): TeamAiProfile {
@@ -97,10 +99,6 @@ export function decideTeam(m: Match, team: 0 | 1, profile: TeamAiProfile, skipId
   }
 }
 
-function noise(m: Match, profile: TeamAiProfile): number {
-  return (m.rng.float() - 0.5) * 2 * profile.difficulty.noise;
-}
-
 function clamp01(x: number): number {
   return Math.max(0, Math.min(1, x));
 }
@@ -121,37 +119,6 @@ function decidePlayer(m: Match, p: PlayerState, profile: TeamAiProfile): PlayerI
 }
 
 // ---------------------------------------------------------------- carrier
-
-/** 0..1 estimate of how likely a shot from here is to go in. */
-export function shotQuality(m: Match, p: PlayerState): number {
-  const goal = m.goalCenter(p.team);
-  const d = dist(p.pos, goal);
-  if (d > SHOT_MAX_RANGE) return 0;
-  const range = 1 - d / SHOT_MAX_RANGE;
-  const toGoal = normalize(sub(goal, p.pos));
-  const angle = clamp01((dot(toGoal, v3(m.attackDir(p.team), 0, 0)) - 0.1) / 0.9);
-  const keeper = m.keeperOf((1 - p.team) as 0 | 1);
-  // expected power at the goal line vs the keeper's effective catch
-  const sh = Math.max(0, m.effectiveStats(p).sh - d * SHOT_POWER_DECAY_PER_UNIT);
-  const ca = m.effectiveStats(keeper).ca * KEEPER_SAVE_MULT;
-  const strength = sh / (sh + ca + 0.01);
-  let blockers = 0;
-  for (const q of m.opponentsOf(p.team)) {
-    if (q.role === "GK") continue;
-    const r = distToLane(q.pos, p.pos, goal);
-    if (r < m.blockReach(q) + 0.8) blockers++;
-  }
-  const blockPenalty = 0.5 ** blockers;
-  return clamp01(range ** 0.6 * angle * strength * 1.8 * blockPenalty);
-}
-
-function distToLane(q: Vec3, a: Vec3, b: Vec3): number {
-  const ab = sub(b, a);
-  const l2 = dot(ab, ab);
-  if (l2 < 1e-9) return dist(q, a);
-  const t = Math.max(0.05, Math.min(0.98, dot(sub(q, a), ab) / l2));
-  return dist(q, add(a, scale(ab, t)));
-}
 
 /** Aim at the goal corner farthest from the keeper. */
 export function bestShotAim(m: Match, p: PlayerState): Vec3 {
@@ -174,7 +141,7 @@ export function bestShotAim(m: Match, p: PlayerState): Vec3 {
   return best;
 }
 
-/** 0..1 estimate of a pass from p to t succeeding and being useful. */
+/** 0..1 estimate of a pass from p to t being useful (sim rule: lane, pressure, advance). */
 export function passQuality(m: Match, p: PlayerState, t: PlayerState): number {
   const d = dist(p.pos, t.pos);
   if (d < 2.5) return 0.05;
@@ -182,15 +149,11 @@ export function passQuality(m: Match, p: PlayerState, t: PlayerState): number {
   const pressure = clamp01(m.nearestOpponentDistance(t) / 6);
   const dir = m.attackDir(p.team);
   const advance = ((t.pos.x - p.pos.x) * dir) / 30;
-  const pa = m.effectiveStats(p).pa;
-  let avgBl = 0;
-  const opps = m.opponentsOf(p.team);
-  for (const q of opps) avgBl += m.effectiveStats(q).bl;
-  avgBl /= Math.max(1, opps.length);
-  const strength = pa / (pa + avgBl);
   let q = lane * 0.45 + pressure * 0.25 + advance * 0.3 + 0.05;
-  q *= 0.6 + strength * 0.8;
-  if (d > 25) q -= 0.25;
+  // flight decay: a pass that would arrive with no PA left is fumbled
+  const arrival = m.passArrivalPower(p, t);
+  if (arrival <= 0) return 0;
+  q *= clamp01(0.4 + arrival / 6);
   if (t.role === "GK") q -= 0.4;
   return clamp01(q);
 }
@@ -199,7 +162,7 @@ export function bestPassTarget(m: Match, p: PlayerState): PlayerState | null {
   let best: PlayerState | null = null;
   let bestQ = -1;
   for (const t of m.playersOf(p.team)) {
-    if (t.id === p.id || !m.canContest(t)) continue;
+    if (t.id === p.id || !m.canAct(t)) continue;
     const q = passQuality(m, p, t);
     if (q > bestQ) {
       bestQ = q;
@@ -212,70 +175,68 @@ export function bestPassTarget(m: Match, p: PlayerState): PlayerState | null {
 function pickTechnique(m: Match, p: PlayerState, kind: TechniqueKind, w: Weights): Technique | undefined {
   const usable = m.usableTechniques(p, kind);
   if (usable.length === 0) return undefined;
-  if (!m.rng.chance(Math.min(0.9, 0.5 * w.technique))) return undefined;
+  if (kind !== "shot" && !m.rng.chance(Math.min(0.9, 0.5 * w.technique))) return undefined;
   let best = usable[0];
-  for (const t of usable) {
-    const key = kind === "shot" ? "sh" : kind === "pass" ? "pa" : "at";
-    if ((t.statMods[key] ?? 0) > (best.statMods[key] ?? 0)) best = t;
-  }
-  // keep a stamina reserve so the player does not crawl afterwards
-  if (p.hp - best.hpCost < p.maxHp * 0.2) return undefined;
+  for (const t of usable) if (t.statBoost > best.statBoost) best = t;
   return best;
 }
 
 function carrierIntent(m: Match, p: PlayerState, profile: TeamAiProfile): PlayerIntent {
   const w = PERSONALITY[profile.personality];
-  const goal = m.goalCenter(p.team);
   const held = m.state.tick - p.receivedTick;
-  const dOpp = m.nearestOpponentDistance(p);
   const st = m.effectiveStats(p);
+  const zone = m.zoneOf(p);
+  const defenders = m.encounterDefenders(p);
 
-  const sq = shotQuality(m, p);
-  const shootU = sq * w.shoot + noise(m, profile);
+  // decide whether to act at all (formulas.md section 8)
+  let act: boolean;
+  if (defenders.length > 0) {
+    let sumAt = 0;
+    for (const d of defenders) sumAt += m.effectiveStats(d).at;
+    const canBreakAll = (p.contestEn ?? st.en) >= sumAt;
+    act = !(canBreakAll && m.rng.pct() < AI_DRIBBLE_PCT_BY_ZONE[zone]);
+  } else {
+    act = held >= AI_MIN_HOLD_TICKS && m.rng.pct() < AI_ACT_PCT_BY_ZONE[zone] * AI_ACT_PCT_SCALE;
+  }
+  const forced = held > AI_MAX_HOLD_TICKS;
+  if (!act && !forced) return dribble(m, p, w);
 
-  let bestPass: PlayerState | null = null;
-  let bestPq = 0;
-  for (const t of m.playersOf(p.team)) {
-    if (t.id === p.id || !m.canContest(t)) continue;
-    const q = passQuality(m, p, t);
-    if (q > bestPq) {
-      bestPq = q;
-      bestPass = t;
-    }
+  // shoot vs pass: shoot if rand(PA + w) < w, w = SH * zone weight, and in range
+  const shotWeight = st.sh * AI_SHOT_WEIGHT_BY_ZONE[zone] * w.shoot;
+  // a shot technique is worth using when its boost lifts the estimated chance
+  let shotTech = pickTechnique(m, p, "shot", w);
+  const plainChance = m.shotGoalChance(p, defenders);
+  let shotChance = plainChance;
+  if (shotTech) {
+    const boostedChance = m.shotGoalChance(p, defenders, shotTech.statBoost);
+    if (boostedChance > plainChance) shotChance = boostedChance;
+    else shotTech = undefined;
   }
-  const passU = bestPq * w.pass + noise(m, profile);
-
-  const dGoal = dist(p.pos, goal);
-  let dribbleU = (clamp01(dOpp / 8) * 0.55 + 0.25 * (1 - dGoal / 60)) * w.dribble + noise(m, profile);
-  if (held < AI_MIN_HOLD_TICKS) dribbleU += 0.45;
-  // along the goal line there is nowhere left to dribble to
-  if (dGoal < 10) dribbleU -= 0.3;
-  if (dOpp < 3) {
-    // pressured: dribbling only looks good if EN should beat their AT
-    let at = 0;
-    for (const q of m.opponentsOf(p.team)) if (dist(q.pos, p.pos) < 3) at = Math.max(at, m.effectiveStats(q).at);
-    dribbleU -= 0.35 * (1 - st.en / (st.en + at + 0.01));
+  const inRange = m.shotInRange(p) && shotChance >= AI_SHOT_MIN_CHANCE;
+  const wantShot = inRange && m.rng.float() * (st.pa * w.pass + shotWeight) < shotWeight;
+  if (wantShot) {
+    return { sprint: false, action: { kind: "shoot", aim: bestShotAim(m, p), techniqueId: shotTech?.id } };
   }
-
-  // held far too long (parked in a corner, no lane): force something to happen
-  if (held > AI_MAX_HOLD_TICKS) {
-    if (sq > 0.05 || !bestPass) return { sprint: false, action: { kind: "shoot", aim: bestShotAim(m, p) } };
-    return { moveTo: p.pos, sprint: false, action: { kind: "pass", targetId: bestPass.id } };
-  }
-  if (sq > AI_SHOT_MIN_QUALITY && shootU >= passU && shootU >= dribbleU) {
-    return {
-      sprint: false,
-      action: { kind: "shoot", aim: bestShotAim(m, p), techniqueId: pickTechnique(m, p, "shot", w)?.id },
-    };
-  }
-  if (bestPass && bestPq > 0.3 && passU > dribbleU) {
+  // pass only if PA beats the blockers' total BL (the defenders not tackling)
+  let sumBl = 0;
+  for (const d of defenders) sumBl += m.effectiveStats(d).bl;
+  const target = bestPassTarget(m, p);
+  if (target && (st.pa >= sumBl || forced)) {
     return {
       moveTo: p.pos,
       sprint: false,
-      action: { kind: "pass", targetId: bestPass.id, techniqueId: pickTechnique(m, p, "pass", w)?.id },
+      action: { kind: "pass", targetId: target.id, techniqueId: pickTechnique(m, p, "pass", w)?.id },
     };
   }
-  // dribble toward goal, steering away from the nearest opponent
+  if (forced && m.shotInRange(p) && shotChance > 0) {
+    return { sprint: false, action: { kind: "shoot", aim: bestShotAim(m, p) } };
+  }
+  return dribble(m, p, w);
+}
+
+/** Dribble toward the goal, steering away from nearby opponents. */
+function dribble(m: Match, p: PlayerState, w: Weights): PlayerIntent {
+  const goal = m.goalCenter(p.team);
   let steer = normalize(sub(goal, p.pos));
   for (const q of m.opponentsOf(p.team)) {
     const away = sub(p.pos, q.pos);
@@ -283,8 +244,9 @@ function carrierIntent(m: Match, p: PlayerState, profile: TeamAiProfile): Player
     if (d < 6) steer = add(steer, scale(normalize(away), (6 - d) / 6));
   }
   const target = add(p.pos, scale(normalize(steer), 6));
+  const dOpp = m.nearestOpponentDistance(p);
   const sprint = dOpp < 5 || m.rng.chance(w.sprint * 0.3);
-  return { moveTo: target, sprint: sprint && p.hp > p.maxHp * 0.3 };
+  return { moveTo: target, sprint: sprint && p.hp > p.effectiveMaxHp * 0.3 };
 }
 
 // ---------------------------------------------------------------- off the ball
@@ -301,12 +263,23 @@ function supportIntent(m: Match, p: PlayerState, profile: TeamAiProfile): Player
     const goal = m.goalCenter(p.team);
     target = add(goal, v3(-dir * 10, p.role === "LF" ? 6 : -6, p.role === "LF" ? 3 : -3));
   }
+  // the two teammates nearest the carrier offer a short pass (flight decay kills long ones)
+  const carrier = ball.carrier ? m.player(ball.carrier) : null;
+  if (carrier) {
+    const mates = m.playersOf(p.team).filter((q) => q.id !== carrier.id && q.role !== "GK");
+    mates.sort((a, b) => dist(a.pos, carrier.pos) - dist(b.pos, carrier.pos));
+    const rank = mates.findIndex((q) => q.id === p.id);
+    if (rank >= 0 && rank < 2) {
+      const side = rank === 0 ? 1 : -1;
+      target = add(carrier.pos, v3(dir * AI_SUPPORT_AHEAD, side * AI_SUPPORT_SIDE, side * 1.5));
+    }
+  }
   // drift away from a close marker to open a lane
   for (const q of m.opponentsOf(p.team)) {
     const d = dist(q.pos, p.pos);
     if (d < 3) target = add(target, scale(normalize(sub(p.pos, q.pos)), 3 - d));
   }
-  return { moveTo: target, sprint: m.rng.chance(w.sprint * 0.2) && p.hp > p.maxHp * 0.5 };
+  return { moveTo: target, sprint: m.rng.chance(w.sprint * 0.2) && p.hp > p.effectiveMaxHp * 0.5 };
 }
 
 function defendIntent(m: Match, p: PlayerState, profile: TeamAiProfile): PlayerIntent {
@@ -314,24 +287,22 @@ function defendIntent(m: Match, p: PlayerState, profile: TeamAiProfile): PlayerI
   const ball = m.state.ball;
   const carrier = ball.carrier ? m.player(ball.carrier) : null;
   const ballPos = carrier ? add(carrier.pos, scale(carrier.vel, 0.2)) : ball.pos;
-  const mates = m.playersOf(p.team).filter((q) => q.role !== "GK" && m.canContest(q));
+  const mates = m.playersOf(p.team).filter((q) => q.role !== "GK" && m.canAct(q));
   mates.sort((a, b) => dist(a.pos, ballPos) - dist(b.pos, ballPos));
   const rank = mates.findIndex((q) => q.id === p.id);
   const d = dist(p.pos, ballPos);
 
-  if (carrier && rank >= 0 && rank < w.pressers && d < AI_PRESS_DISTANCE * (rank === 0 ? 3 : 1)) {
-    if (d <= m.tackleRange && p.tackleCooldown === 0) {
-      const at = m.effectiveStats(p).at;
-      const en = m.effectiveStats(carrier).en;
-      const u = (at / (at + en)) * w.tackle * (0.6 + 0.4 * (p.hp / p.maxHp)) + noise(m, profile);
-      if (u > 0.33)
-        return {
-          moveTo: ballPos,
-          sprint: false,
-          action: { kind: "tackle", techniqueId: pickTechnique(m, p, "tackle", w)?.id },
-        };
+  // a defender locks onto the carrier inside its lock radius (290 units, +100 Elite Defense)
+  const locks = carrier && d < m.lockRadius(p) * (rank === 0 ? 2 : 1);
+  if (carrier && rank >= 0 && rank < w.pressers + 1 && locks) {
+    if (d <= m.tackleReach(p) && p.tackleCooldown === 0) {
+      return {
+        moveTo: ballPos,
+        sprint: false,
+        action: { kind: "tackle", techniqueId: pickTechnique(m, p, "tackle", w)?.id },
+      };
     }
-    return { moveTo: ballPos, sprint: d > 3 && p.hp > p.maxHp * 0.25 };
+    return { moveTo: ballPos, sprint: d > 3 && p.hp > p.effectiveMaxHp * 0.25 };
   }
   if (!carrier && rank >= 0 && rank < 2) {
     // ball in flight toward us: chase the landing point
@@ -341,7 +312,7 @@ function defendIntent(m: Match, p: PlayerState, profile: TeamAiProfile): PlayerI
   const own = m.ownGoalCenter(p.team);
   if (mark && dist(mark.pos, ballPos) < 28) {
     const target = add(mark.pos, scale(normalize(sub(own, mark.pos)), AI_MARK_OFFSET));
-    return { moveTo: target, sprint: dist(p.pos, target) > 8 && p.hp > p.maxHp * 0.4 };
+    return { moveTo: target, sprint: dist(p.pos, target) > 8 && p.hp > p.effectiveMaxHp * 0.4 };
   }
   const preset = FORMATIONS[m.state.formations[p.team]];
   return { moveTo: m.formationSlot(p, preset.defenseShift), sprint: false };
@@ -350,10 +321,10 @@ function defendIntent(m: Match, p: PlayerState, profile: TeamAiProfile): PlayerI
 function looseIntent(m: Match, p: PlayerState, profile: TeamAiProfile): PlayerIntent {
   const ball = m.state.ball;
   const predicted = add(ball.pos, scale(ball.vel, 0.3));
-  const mates = m.playersOf(p.team).filter((q) => q.role !== "GK" && m.canContest(q));
+  const mates = m.playersOf(p.team).filter((q) => q.role !== "GK" && m.canAct(q));
   mates.sort((a, b) => dist(a.pos, predicted) - dist(b.pos, predicted));
   const rank = mates.findIndex((q) => q.id === p.id);
-  if (rank >= 0 && rank < 2) return { moveTo: predicted, sprint: p.hp > p.maxHp * 0.2 };
+  if (rank >= 0 && rank < 2) return { moveTo: predicted, sprint: p.hp > p.effectiveMaxHp * 0.2 };
   const w = PERSONALITY[profile.personality];
   return { moveTo: m.formationSlot(p, 0), sprint: m.rng.chance(w.sprint * 0.2) };
 }

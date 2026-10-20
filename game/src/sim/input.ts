@@ -24,8 +24,8 @@ export interface HumanTeamInput {
   pass?: string | true;
   shoot?: true;
   tackle?: true;
-  /** Technique to use with the action this tick (or on its own for shot/pass/tackle kinds). */
-  technique?: string;
+  /** Technique id to use with the action this tick (or on its own for shot/pass/tackle kinds). */
+  technique?: number;
 }
 
 export type TeamInput = AiTeamInput | HumanTeamInput;
@@ -47,7 +47,7 @@ export interface PlayerAction {
   targetId?: string;
   /** Shot aim point in world space. */
   aim?: Vec3;
-  techniqueId?: string;
+  techniqueId?: number;
 }
 
 export interface PlayerIntent {

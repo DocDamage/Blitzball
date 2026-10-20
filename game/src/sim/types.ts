@@ -1,8 +1,10 @@
 /**
- * types.ts - Data definitions (loaded from data/json later) and runtime state
- * types for the match simulation. Everything here is plain data: no classes,
- * no Sets/Maps, so a MatchState can be structured-cloned and deep-compared in
- * replay tests.
+ * types.ts - Data definitions and runtime state types for the match simulation.
+ *
+ * Everything here is plain data: no classes, no Sets/Maps, so a MatchState can
+ * be structured-cloned and deep-compared in replay tests. Player ids are
+ * strings (unique within a match); `dataId` carries the numeric id from
+ * data/json so a finished match can be reported back to the league layer.
  */
 
 import type { Vec3 } from "./vec";
@@ -23,6 +25,10 @@ export interface Stats {
 
 export type StatKey = keyof Stats;
 
+/** The six stats that take part in contests (and can be withered / overridden). */
+export type ContestStat = "en" | "pa" | "sh" | "at" | "bl" | "ca";
+export const CONTEST_STATS: readonly ContestStat[] = ["en", "pa", "sh", "at", "bl", "ca"];
+
 /** FFX field positions. The first six players of a TeamDef fill these in ROLE_ORDER. */
 export type Role = "LF" | "RF" | "MF" | "LD" | "RD" | "GK";
 export const ROLE_ORDER: readonly Role[] = ["LF", "RF", "MF", "LD", "RD", "GK"];
@@ -31,10 +37,21 @@ export interface PlayerDef {
   id: string;
   name: string;
   teamId: string;
+  /** Numeric player id from data/json (needed for MatchReport). */
+  dataId?: number;
   stats: Stats;
   level: number;
-  /** Technique ids this player knows at kickoff (see techniques.ts). */
-  techniques: string[];
+  /** Equipped technique ids (1..60) - the ones that matter for play. */
+  techniques: number[];
+  /**
+   * Technique ids the player already knows (learned set, equipped or not).
+   * A known technique is never offered for techcopy again.
+   */
+  keyTechniques?: number[];
+  /** Four tiers of learnable technique ids (data/json players.learnableTiers). */
+  learnableTiers?: number[][];
+  /** Levels at which tiers 2..4 open (data/json players.tierLevels). */
+  tierLevels?: number[];
 }
 
 export type FormationId = "standard" | "attack" | "defense" | "counter";
@@ -43,6 +60,8 @@ export type Personality = "aggressive" | "technical" | "physical" | "balanced";
 export interface TeamDef {
   id: string;
   name: string;
+  /** Numeric team id from data/json (needed for MatchReport). */
+  dataId?: number;
   /** Starters are players[0..5] in ROLE_ORDER; extra players are bench. */
   players: PlayerDef[];
   formation: FormationId;
@@ -50,40 +69,85 @@ export interface TeamDef {
   personality?: Personality;
 }
 
-export type StatusKind = "poison" | "sleep" | "wither" | "nap";
+/** Runtime status kinds: Venom = poison, Nap = sleep, Wither halves a stat. Drain is instant. */
+export type StatusKind = "poison" | "sleep" | "wither";
 
-export type TechniqueKind = "shot" | "pass" | "tackle" | "block" | "catch" | "passive";
+/** Technique status families (formulas.md section 5). */
+export type StatusFamily = "venom" | "nap" | "wither" | "drain";
 
-export interface StatusInflict {
-  kind: StatusKind;
-  /** Seconds. */
-  duration: number;
-  /** 0..1 chance applied when the technique's contest is won. */
-  chance: number;
-}
+export type TechniqueKind = "shot" | "pass" | "tackle" | "evade" | "guard" | "passive";
+
+export type PassiveKind =
+  | "spinBall"
+  | "gripGloves"
+  | "eliteDefense"
+  | "brawler"
+  | "pileVenom"
+  | "pileWither"
+  | "regen"
+  | "goodMorning"
+  | "hiRisk"
+  | "goldenArm"
+  | "gamble"
+  | "superGoalie";
 
 export interface Technique {
-  id: string;
+  id: number;
   name: string;
   kind: TechniqueKind;
-  /** HP (stamina) spent on use; a player needs at least this much HP to use it. */
+  /** HP spent on use (or at match start for passives). */
   hpCost: number;
-  /** Additive stat bonuses applied for the contest this technique is used in. */
-  statMods: Partial<Stats>;
-  /** Status inflicted on the contest loser (keeper for shots, interceptor for passes, carrier for tackles). */
-  inflicts?: StatusInflict;
-  /** Seconds before the technique can be used again. */
-  cooldown: number;
-  /** Can be learned by witnesses (techcopy). */
-  techcopy: boolean;
+  /** Added to SH / PA / AT for the contest (cap 99). */
+  statBoost: number;
+  /** Trigger chance in percent (status, evade, guard, passive triggers). */
+  chancePct: number;
+  flags: number;
+  description: string;
+  /** Status inflicted (shot/pass/tackle) or guarded against (Anti-*). */
+  family?: StatusFamily;
+  /** 1..3 for status techniques, 0 otherwise. */
+  tier: number;
+  /** EXP awarded to the user when the technique is used. */
+  useExp: number;
+  /** Passive behaviour, if any. */
+  passive?: PassiveKind;
+  /** Volley Shot family (flag 512): fires automatically on a loose ball. */
+  volley: boolean;
+  /** Jecht Shot 2 / Invisible Shot: replaces the goalie roll by an aimed shot. */
+  aimed: boolean;
 }
 
 // ---------------------------------------------------------------- runtime state
 
-export interface StatusInstance {
-  kind: StatusKind;
+export interface ChanceCost {
+  chance: number;
+  cost: number;
+}
+
+/** Passive technique effects resolved once at kickoff (formulas.md section 1). */
+export interface Passives {
+  eliteDefense: boolean;
+  goldenArm: boolean;
+  pileVenom: boolean;
+  pileWither: boolean;
+  hiRisk: boolean;
+  regen: boolean;
+  superGoalie: boolean;
+  spinBall: boolean;
+  gripGloves: boolean;
+  goodMorning: boolean;
+  gamble: boolean;
+  brawler: ChanceCost | null;
+  tackleSlip: ChanceCost | null;
+  volley: ChanceCost | null;
+  anti: Partial<Record<StatusFamily, ChanceCost>>;
+}
+
+export interface WitherInstance {
   /** Ticks remaining. */
   remaining: number;
+  /** 2, or 4 after Pile Wither. */
+  divisor: number;
 }
 
 export interface PlayerState {
@@ -97,15 +161,35 @@ export interface PlayerState {
   vel: Vec3;
   facing: Vec3;
   hp: number;
+  /** Level-derived HP (0040). */
   maxHp: number;
-  statuses: StatusInstance[];
-  /** technique id -> ticks remaining. */
-  cooldowns: Record<string, number>;
-  /** Techniques known now (grows through techcopy). */
-  techniques: string[];
+  /** HP after passive technique deductions (0080): the regen ceiling. */
+  effectiveMaxHp: number;
+  /** Pending match EXP (capped at EXP_CAP). */
+  exp: number;
+  passives: Passives;
+  /** HP tick counter (formulas.md section 3). */
+  hpCounter: number;
+  /** HP lost per carrier tick: 1, 4 poisoned, x4 per Pile Venom stack. */
+  drainPerTick: number;
+  poisonTicks: number;
+  sleepTicks: number;
+  wither: Partial<Record<ContestStat, WitherInstance>>;
+  /** Good Morning! stat override (99 decaying). */
+  override: Partial<Record<ContestStat, number>>;
+  overrideEveryTicks: number;
+  overrideCounter: number;
+  gambleTicks: number;
+  gambleStats: Record<ContestStat, number> | null;
+  /** Working EN of the current encounter chain (null outside an encounter). */
+  contestEn: number | null;
+  /** Equipped techniques (ids). */
+  techniques: number[];
+  /** Techniques learned by techcopy this match (committed to the roster by the league layer). */
+  learned: number[];
   /** Ticks during which the player cannot tackle again. */
   tackleCooldown: number;
-  /** Ticks during which the player cannot move (just tackled / whiffed a tackle). */
+  /** Ticks during which the player cannot move or act. */
   stun: number;
   hasBall: boolean;
   /** Tick at which the player last received the ball (AI hold timing). */
@@ -118,7 +202,7 @@ export interface BallFlight {
   /** Receiver for passes; undefined for shots. */
   to?: string;
   team: 0 | 1;
-  /** Remaining pass/shot power (PA or SH based), decays in flight. */
+  /** Remaining PA' / SH' (decays in flight, reduced by blockers). */
   power: number;
   /** Players who already contested this flight and may not retry. */
   contested: string[];
@@ -126,8 +210,14 @@ export interface BallFlight {
   aim: Vec3;
   travelled: number;
   aimDistance: number;
+  /** Last floor(distance / FLIGHT_DECAY_DISTANCE) seen (flight decay bookkeeping). */
+  decayBucket: number;
   /** Technique used to launch, if any (its status payload applies on contest). */
-  techniqueId?: string;
+  techniqueId?: number;
+  /** Aimed shot (Jecht Shot 2 / Invisible Shot fired). */
+  aimed: boolean;
+  /** Goalie deflection window out of 10, fixed at launch (Spin Ball). */
+  deflectWindow: number;
 }
 
 export interface BallState {
@@ -144,7 +234,9 @@ export type MatchPhase = "reset" | "play" | "finished";
 
 export interface MatchState {
   tick: number;
-  /** Seconds of play elapsed in the current period (does not run during resets). */
+  /** Ticks of play elapsed in the current period (does not run during resets). */
+  periodTicks: number;
+  /** Game-seconds of play elapsed in the current period (FRAMES_PER_GAME_SECOND per second). */
   time: number;
   /** 1, 2, or 3 for overtime. */
   half: 1 | 2 | 3;
@@ -167,7 +259,7 @@ export interface MatchState {
 
 interface EventBase {
   tick: number;
-  /** Period clock in seconds at the time of the event. */
+  /** Period clock in game-seconds at the time of the event. */
   time: number;
   half: 1 | 2 | 3;
 }
@@ -175,19 +267,32 @@ interface EventBase {
 export type MatchEvent = EventBase &
   (
     | { kind: "kickoff" }
-    | { kind: "pass"; from: string; to: string; team: 0 | 1; techniqueId?: string }
+    | { kind: "pass"; from: string; to: string; team: 0 | 1; techniqueId?: number }
     | { kind: "pass-complete"; from: string; to: string; team: 0 | 1 }
+    /** A blocker won the roll and grabbed the pass. */
     | { kind: "pass-intercepted"; from: string; to: string; by: string; team: 0 | 1 }
-    | { kind: "shot"; by: string; team: 0 | 1; power: number; techniqueId?: string }
+    /** The pass arrived with no power left. */
+    | { kind: "pass-fumbled"; from: string; to: string; team: 0 | 1 }
+    | { kind: "shot"; by: string; team: 0 | 1; power: number; techniqueId?: number; aimed: boolean }
     | { kind: "shot-blocked"; by: string; blocker: string; team: 0 | 1 }
     | { kind: "save"; keeper: string; shooter: string; team: 0 | 1 }
+    /** The goalie got a hand on it: loose ball. */
+    | { kind: "deflection"; keeper: string; shooter: string; team: 0 | 1 }
     | { kind: "goal"; by: string; team: 0 | 1; score: [number, number]; keeperInReach: boolean }
-    | { kind: "tackle"; by: string; on: string; team: 0 | 1; techniqueId?: string }
+    | { kind: "tackle"; by: string; on: string; team: 0 | 1; techniqueId?: number }
+    | { kind: "tackle-miss"; by: string; on: string; team: 0 | 1 }
+    | { kind: "tackle-evaded"; by: string; on: string; team: 0 | 1 }
     | { kind: "breakthrough"; carrier: string; tackler: string; team: 0 | 1 }
-    | { kind: "technique-used"; by: string; techniqueId: string; team: 0 | 1 }
-    | { kind: "techcopy"; by: string; techniqueId: string; from: string; team: 0 | 1 }
-    | { kind: "status-applied"; player: string; status: StatusKind; duration: number }
-    | { kind: "status-expired"; player: string; status: StatusKind }
+    | { kind: "technique-used"; by: string; techniqueId: number; team: 0 | 1 }
+    | { kind: "techcopy"; by: string; techniqueId: number; from: string; team: 0 | 1 }
+    | { kind: "techcopy-failed"; by: string; techniqueId: number; from: string; team: 0 | 1 }
+    | { kind: "status-applied"; player: string; status: StatusKind; duration: number; stat?: ContestStat }
+    | { kind: "status-resisted"; player: string; status: StatusFamily; techniqueId: number }
+    | { kind: "status-expired"; player: string; status: StatusKind; stat?: ContestStat }
+    | { kind: "drain"; by: string; on: string; amount: number }
+    | { kind: "wake-up"; player: string; by: string }
+    | { kind: "good-morning"; player: string }
+    | { kind: "gamble"; player: string }
     | { kind: "half-time"; score: [number, number] }
     | { kind: "overtime-start"; score: [number, number] }
     | { kind: "full-time"; score: [number, number] }
