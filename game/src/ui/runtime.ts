@@ -19,6 +19,8 @@ export interface MatchSettings {
   reducedFlash: boolean;
   colorblind: boolean;
   keyBindings?: Partial<KeyBindings>;
+  // [audio hook] mirrors src/game/types.ts MatchSettings.audio (0..1).
+  audio?: { master: number; sfx: number; music: number; muted: boolean };
 }
 
 export interface MatchOptions {

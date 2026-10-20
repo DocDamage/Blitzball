@@ -12,6 +12,8 @@
  * frame plus one tick (< 50 ms at 30 fps).
  */
 
+// [audio hook]
+import { type BlitzAudio, createAudio, DEFAULT_AUDIO_SETTINGS, familyOf } from "../audio";
 import { InputManager, type InputState, mergeBindings } from "../input";
 import { emptyLine, type MatchReport } from "../league/report";
 import { type BlitzRenderer, createRenderer } from "../render";
@@ -19,6 +21,7 @@ import { DT, TACKLE_COOLDOWN_SECONDS, TICK_RATE } from "../sim/constants";
 import { AI_INPUT, type MatchInput, type TeamInput } from "../sim/input";
 import { Match } from "../sim/match";
 import { matchReport } from "../sim/report";
+import { getTechnique } from "../sim/techniques";
 import type { MatchEvent, PlayerState } from "../sim/types";
 import { Hud, type HudView, type MarkView, type RadialOption, type SelectedPlayerView } from "../ui/hud";
 import { commentaryForEvents, makeNameLookup, type NameLookup } from "./commentary";
@@ -108,6 +111,8 @@ class MatchRuntime implements MatchHandle {
   private readonly hud: Hud;
   private readonly input: InputManager;
   private readonly tracker = new ActionTracker();
+  // [audio hook] procedural cues for sim events; ambience runs for the whole match.
+  private readonly audio: BlitzAudio;
   private readonly names: NameLookup;
   private readonly unsubNav: () => void;
   private readonly unsubPress: () => void;
@@ -165,6 +170,11 @@ class MatchRuntime implements MatchHandle {
       else this.pause();
     });
 
+    // [audio hook]
+    this.audio = createAudio(options.settings.audio ?? DEFAULT_AUDIO_SETTINGS);
+    this.audio.resume();
+    this.audio.setAmbience(true);
+
     this.lastNow = performance.now();
     this.raf = requestAnimationFrame(this.frame);
   }
@@ -206,6 +216,7 @@ class MatchRuntime implements MatchHandle {
     this.unsubPress();
     this.input.dispose();
     this.hud.dispose();
+    this.audio.dispose(); // [audio hook]
     this.renderer.dispose();
     this.stage.remove();
   }
@@ -417,6 +428,7 @@ class MatchRuntime implements MatchHandle {
     const human = this.options.humanTeam;
     this.tracker.ingest(frameEvents, m.state);
     this.hud.pushCommentary(commentaryForEvents(frameEvents, this.names, human));
+    this.playCues(frameEvents); // [audio hook]
     for (const e of frameEvents) {
       if (e.kind === "goal") {
         this.bannerEvent = e;
@@ -429,6 +441,35 @@ class MatchRuntime implements MatchHandle {
         this.hud.shake();
       } else if (e.kind === "kickoff") {
         this.bannerEvent = null;
+      }
+    }
+  }
+
+  // [audio hook] sim event -> cue name (events not listed are silent).
+  private playCues(events: MatchEvent[]): void {
+    for (const e of events) {
+      switch (e.kind) {
+        case "kickoff":
+        case "pass":
+        case "pass-complete":
+        case "pass-intercepted":
+        case "shot":
+        case "shot-blocked":
+        case "save":
+        case "goal":
+        case "tackle":
+        case "tackle-miss":
+        case "breakthrough":
+        case "half-time":
+        case "full-time":
+        case "techcopy":
+          this.audio.play(e.kind);
+          break;
+        case "technique-used":
+          this.audio.play("technique", { family: familyOf(getTechnique(e.techniqueId)?.kind) });
+          break;
+        default:
+          break;
       }
     }
   }

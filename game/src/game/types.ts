@@ -20,6 +20,8 @@ export interface MatchSettings {
   /** Colourblind-safe team palette for the HUD. */
   colorblind: boolean;
   keyBindings?: Partial<KeyBindings>;
+  // [audio hook] Volumes 0..1 for src/audio; omitted = defaults.
+  audio?: { master: number; sfx: number; music: number; muted: boolean };
 }
 
 export interface MatchOptions {

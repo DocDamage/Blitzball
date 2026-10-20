@@ -84,6 +84,13 @@ export function matchOptions(
       reducedFlash: settings.reducedFlash,
       colorblind: settings.colorblind,
       keyBindings: bindings ? toRuntimeBindings(bindings) : undefined,
+      // [audio hook] settings sliders are 0..100; the audio layer takes 0..1.
+      audio: {
+        master: settings.masterVolume / 100,
+        sfx: settings.sfxVolume / 100,
+        music: settings.musicVolume / 100,
+        muted: settings.audioMuted,
+      },
     },
     instant,
   };

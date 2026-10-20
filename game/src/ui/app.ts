@@ -9,6 +9,8 @@
  * the same data-focus-id.
  */
 
+// [audio hook]
+import { type BlitzAudio, createAudio } from "../audio";
 import type { ContractEvent, GrowthEvent, LeagueState, MatchReport, PrizeEvent, RoundResult } from "../league";
 import { autosave, createDefaultAdapter, type SaveAdapter } from "../league";
 import type { MatchEvent } from "../sim/types";
@@ -57,6 +59,10 @@ export class App {
   readonly matchHost: HTMLElement;
   readonly toastHost: HTMLElement;
   readonly adapter: SaveAdapter;
+  /** [audio hook] Shell audio: UI blips + menu music (the match runtime owns its own instance). */
+  readonly audio: BlitzAudio;
+  /** [audio hook] Name of the user-supplied music file, for the Settings screen (not persisted). */
+  userMusicName: string | null = null;
 
   state: LeagueState | null = null;
   settings: Settings;
@@ -84,21 +90,63 @@ export class App {
     this.toastHost = h("div", { class: "toast-host" });
     empty(root);
     root.append(this.shell, this.matchHost, this.toastHost);
+    this.audio = createAudio(this.audioSettings()); // [audio hook]
     this.applySettings();
   }
 
   start(): void {
     this.detachFocus = attachFocus({
       root: () => this.screenHost,
-      back: () => this.back(),
+      back: () => {
+        this.audio.play("ui-back"); // [audio hook]
+        this.back();
+      },
       inputLocked: () => this.inputLocked,
     });
+    this.attachUiSounds(); // [audio hook]
+    this.audio.startMusic(); // [audio hook] starts once the first gesture unlocks the context
     this.render();
   }
 
   destroy(): void {
     this.cleanup?.();
     this.detachFocus?.();
+    this.detachUiSounds?.(); // [audio hook]
+    this.audio.dispose(); // [audio hook]
+  }
+
+  // ------------------------------------------------------------ audio hook
+
+  private detachUiSounds: (() => void) | null = null;
+
+  /** Volumes as the audio layer wants them (0..1). */
+  audioSettings(): { master: number; sfx: number; music: number; muted: boolean } {
+    const s = this.settings;
+    return { master: s.masterVolume / 100, sfx: s.sfxVolume / 100, music: s.musicVolume / 100, muted: s.audioMuted };
+  }
+
+  /** Focus move -> click, button activation -> confirm (the topbar Back button -> back). */
+  private attachUiSounds(): void {
+    let lastFocus: string | null = null;
+    const onFocus = (e: FocusEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (!el || el === this.screenHost) return;
+      const id = el.dataset.focusId ?? null;
+      if (id !== null && id === lastFocus) return; // same control re-focused after a refresh
+      lastFocus = id;
+      this.audio.play("ui-click");
+    };
+    const onClick = (e: MouseEvent) => {
+      const btn = (e.target as HTMLElement | null)?.closest("button");
+      if (!btn || btn.disabled) return;
+      this.audio.play(btn.closest(".topbar") ? "ui-back" : "ui-confirm");
+    };
+    this.shell.addEventListener("focusin", onFocus);
+    this.shell.addEventListener("click", onClick, true);
+    this.detachUiSounds = () => {
+      this.shell.removeEventListener("focusin", onFocus);
+      this.shell.removeEventListener("click", onClick, true);
+    };
   }
 
   // ------------------------------------------------------------ navigation
@@ -158,6 +206,7 @@ export class App {
     this.root.style.setProperty("--ui-scale", String(s.uiScale));
     document.documentElement.dataset.colorblind = String(s.colorblind);
     this.root.classList.toggle("reduced-flash", s.reducedFlash);
+    this.audio.setVolumes(this.audioSettings()); // [audio hook]
   }
 
   // ------------------------------------------------------------ persistence

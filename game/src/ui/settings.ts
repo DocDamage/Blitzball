@@ -18,10 +18,11 @@ export interface Settings {
   halfMinutes: 1 | 3 | 5;
   overtime: boolean;
   camera: CameraMode;
-  /** Audio placeholders (0..100); no audio engine yet. */
+  /** Audio volumes (0..100) for src/audio. */
   masterVolume: number;
   musicVolume: number;
   sfxVolume: number;
+  audioMuted: boolean;
   /** 0.8 .. 1.4 */
   uiScale: number;
   colorblind: boolean;
@@ -38,6 +39,7 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze({
   masterVolume: 80,
   musicVolume: 70,
   sfxVolume: 80,
+  audioMuted: false,
   uiScale: 1,
   colorblind: false,
   screenShake: true,
@@ -121,6 +123,7 @@ export function parseSettings(raw: unknown): Settings {
     masterVolume: num(o.masterVolume, d.masterVolume, 0, 100),
     musicVolume: num(o.musicVolume, d.musicVolume, 0, 100),
     sfxVolume: num(o.sfxVolume, d.sfxVolume, 0, 100),
+    audioMuted: bool(o.audioMuted, d.audioMuted),
     uiScale: num(o.uiScale, d.uiScale, 0.8, 1.4),
     colorblind: bool(o.colorblind, d.colorblind),
     screenShake: bool(o.screenShake, d.screenShake),

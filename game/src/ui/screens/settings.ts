@@ -27,7 +27,8 @@ export function settingsScreen(app: App): ScreenView {
     on: (v: number) => void,
     id: string,
   ) => {
-    const input = h("input", { type: "range", min, max, step, value, dataset: { focusId: id } });
+    const input = h("input", { type: "range", min, max, step, dataset: { focusId: id } }) as HTMLInputElement;
+    input.value = String(value); // set after min/max so the browser does not clamp it to the default range
     const out = h("span", { class: "muted", text: String(value) });
     input.addEventListener("input", () => {
       out.textContent = input.value;
@@ -100,11 +101,52 @@ export function settingsScreen(app: App): ScreenView {
     toggle("Reduced flashing", s.reducedFlash, (v) => set({ reducedFlash: v }), "flash"),
   );
 
+  // [audio hook] Sliders drive app.audio live while dragging and persist on release.
+  const live = (patch: Partial<{ master: number; sfx: number; music: number }>) => app.audio.setVolumes(patch);
+  const volume = (
+    label: string,
+    key: "masterVolume" | "musicVolume" | "sfxVolume",
+    bus: "master" | "music" | "sfx",
+  ) => {
+    const row = slider(label, s[key], 0, 100, 1, (v) => set({ [key]: v }), bus);
+    row.querySelector("input")?.addEventListener("input", (e) => {
+      live({ [bus]: Number((e.target as HTMLInputElement).value) / 100 });
+      if (bus !== "music") app.audio.play("ui-click");
+    });
+    return row;
+  };
+  const musicFile = h("input", { type: "file", dataset: { focusId: "musicFile" } });
+  musicFile.setAttribute("accept", "audio/*");
+  musicFile.addEventListener("change", () => {
+    const file = musicFile.files?.[0] ?? null;
+    app.audio.setUserMusic(file);
+    app.userMusicName = file?.name ?? null;
+    app.refresh();
+  });
   const audio = section(
-    "Audio (placeholders - no audio engine yet)",
-    slider("Master volume", s.masterVolume, 0, 100, 1, (v) => set({ masterVolume: v }), "master"),
-    slider("Music", s.musicVolume, 0, 100, 1, (v) => set({ musicVolume: v }), "music"),
-    slider("Effects", s.sfxVolume, 0, 100, 1, (v) => set({ sfxVolume: v }), "sfx"),
+    "Audio",
+    toggle("Mute all", s.audioMuted, (v) => set({ audioMuted: v }), "muted"),
+    volume("Master volume", "masterVolume", "master"),
+    volume("Music", "musicVolume", "music"),
+    volume("Effects", "sfxVolume", "sfx"),
+    h("p", { class: "muted", text: "Sounds and the menu track are generated in the browser - no audio files." }),
+    labelled("Your own music", musicFile),
+    h(
+      "div",
+      { class: "row between" },
+      h("span", { class: "muted", text: app.userMusicName ? `Playing: ${app.userMusicName}` : "Procedural track" }),
+      app.userMusicName
+        ? button(
+            "Use procedural track",
+            () => {
+              app.audio.setUserMusic(null);
+              app.userMusicName = null;
+              app.refresh();
+            },
+            { class: "small", focusId: "clearMusic" },
+          )
+        : null,
+    ),
   );
 
   // ---- key bindings
