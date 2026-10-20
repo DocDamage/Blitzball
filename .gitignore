@@ -1,0 +1,16 @@
+# Never commit disc contents or BIOS
+*.iso
+bios/
+data/raw/
+data/art/
+# Tooling
+node_modules/
+tools/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# Build
+game/dist/
+# Editor
+.vscode/
+*.log
