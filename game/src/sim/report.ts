@@ -33,7 +33,7 @@ export function matchReport(match: Match): MatchReport {
     }
     return l;
   };
-  for (const p of match.state.players) line(p.id);
+  for (const p of match.state.players) line(p.id).expGained = p.exp;
 
   let lastPass: { from: string; to: string } | null = null;
   const possessionChange: readonly MatchEvent["kind"][] = [

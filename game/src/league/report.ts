@@ -18,6 +18,8 @@ export interface PlayerMatchLine {
   techniquesUsed: number[];
   /** Technique ids this player witnessed with a successful techcopy roll. */
   techcopyWitnessed: number[];
+  /** EXP awarded by the simulation using the original per-action table (section 6 of formulas.md). */
+  expGained?: number;
 }
 
 export interface MatchReport {

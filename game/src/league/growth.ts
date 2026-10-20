@@ -21,6 +21,9 @@ export type GrowthEvent =
 
 /** EXP earned from one player's match line (plus the win bonus if their team won). */
 export function expForLine(line: PlayerMatchLine, won: boolean): number {
+  // The simulation reports EXP from the original award table; the placeholder below only covers reports
+  // produced by the statistical resolver.
+  if (line.expGained !== undefined) return line.expGained;
   const e = EXP_PER_ACTION;
   return (
     e.appearance +
