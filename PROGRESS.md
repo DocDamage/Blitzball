@@ -40,7 +40,10 @@ palette, screen-shake and reduced-flash toggles, three difficulty levels (AI rea
 * Original Blitzball portraits, logos and 3D models (`tools/docs/models.md`); game uses rebuilt art.
 * EXP-to-level thresholds are fitted to the new-game roster data (native code, not in the script).
 * Mark Mode assignments are stored by the UI but not yet consumed by the simulation.
-* Balance pass with real play-testing; the Aurochs score rarely at new-game levels (matches the original data).
+* Balance pass (2026-10-20, session 2): headless batch over all 30 matchups x 6 seeds (`BALANCE=1 npx vitest run src/sim/balance.test.ts`):
+  4.0 goals/match, ~10 shots per side, 81% on target, 60% pass completion, no side without shots. Speed now
+  1.8 + 0.04*SP so slow teams stay playable; decay units 45 per pool unit; AI shoots on weight near goal.
+  New-game Aurochs still lose heavily to Psyches/Glories, as in the original data.
 
 ## Open questions (plan section 10) - working assumptions
 1. Story-only players: not in the roster (data has the 60 recruitable players only).
