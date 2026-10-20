@@ -127,3 +127,16 @@ Model textures (type2 `modelN_tex00.png`) contain each blitzer's face, and are t
 `game/src/render/portraits.ts` therefore renders a head-and-shoulders view of each player's original model
 (`game/portraits.html` shows the whole sheet). Free agents have no model; the two bent-pose Guado models (25, 26) are skipped.
 No team logos were found (crests only exist as small details on the uniform textures).
+
+### Executable pass for the splash texture source (same session; unresolved)
+Using the PS2 SDK's own strings/shapes to label the US executable (the DocDamage/ffx decomp only names SDK symbols, and
+for the JP SLPS build, so addresses were found by signature instead):
+* `sceGsSetDefLoadImage` = `FUN_002d79d0` (its "too big size" message), `FUN_002d7bb8` is its StoreImage sibling; 22 and 8 callers
+  respectively (0x103d08, 0x168110, 0x17e088, 0x19ed30, 0x283038, 0x28c210, 0x2cc118, ...). `FUN_00116eb0` builds a BITBLT
+  header (TRXPOS/TRXREG). None of the callers has been tied to the splash sprites yet.
+* The 342-entry pointer tables at 0x552cc0 / 0x553220 are switch tables inside the script condition evaluator (input state
+  checks), **not** the call table; the 0x30b0d8 table is empty at 0x11B. The script call dispatch (ids 0x011B etc.) is still not found,
+  so `setSplashSprite`'s handler remains unlocated.
+* More data ruled out: 00434 = animated water caustic frames, 00454 = a second Sphere Grid dump (same layout as 00442),
+  00479 = packed/compressed. `tools/extract/r5900dis.py` disassembles pointer-table targets.
+Next idea: breakpoint-free approach via PCSX2 (`tools/pcsx2`): load a Blitzball save state and dump GS VRAM when the team menu is up.
