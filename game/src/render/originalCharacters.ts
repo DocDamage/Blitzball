@@ -4,6 +4,7 @@ import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js
 import { CharacterSystem } from "./characters";
 import { type PlayerAction, type PlayerState, toWorld } from "./renderState";
 import { retargetClip } from "./retarget";
+import { addCaustics, type UnderwaterUniforms } from "./underwater";
 
 /**
  * Draws players with the original FFX Blitzball models and match motions extracted from the disc
@@ -96,7 +97,10 @@ export class OriginalCharacterSystem {
   private readonly drawn = new Set<string>();
   private disposed = false;
 
-  constructor(private readonly baseUrl = "/ffx/blitz/") {
+  constructor(
+    private readonly underwater?: UnderwaterUniforms,
+    private readonly baseUrl = "/ffx/blitz/",
+  ) {
     this.group.add(this.fallback.group);
     fetch(`${baseUrl}manifest.json`)
       .then((r) => (r.ok ? (r.json() as Promise<Manifest>) : null))
@@ -202,7 +206,7 @@ export class OriginalCharacterSystem {
         if (this.disposed) return;
         const srcEntry = source !== undefined ? m.models[String(source)] : undefined;
         const clips = actionClips(gltf, entry, m.fps, src && srcEntry ? { gltf: src, entry: srcEntry } : undefined);
-        this.templates.set(modelIndex, buildTemplate(cloneSkinned(gltf.scene), clips));
+        this.templates.set(modelIndex, buildTemplate(cloneSkinned(gltf.scene), clips, this.underwater));
       })
       .catch((err) => console.warn(`blitz model ${modelIndex} failed to load`, err));
   }
@@ -254,7 +258,11 @@ export class OriginalCharacterSystem {
   }
 }
 
-function buildTemplate(scene: THREE.Object3D, clips: Record<ClipAction, THREE.AnimationClip>): Template {
+function buildTemplate(
+  scene: THREE.Object3D,
+  clips: Record<ClipAction, THREE.AnimationClip>,
+  underwater?: UnderwaterUniforms,
+): Template {
   // FFX model space is Y-down; centre the body on the player's position
   const body = new THREE.Group();
   scene.rotation.x = Math.PI;
@@ -271,6 +279,7 @@ function buildTemplate(scene: THREE.Object3D, clips: Record<ClipAction, THREE.An
       mat.alphaTest = 0.5;
       mat.transparent = false;
       mat.side = THREE.DoubleSide;
+      if (underwater) addCaustics(mat, underwater);
     }
   });
   return { scene: body, clips, hand: findHand(scene) };

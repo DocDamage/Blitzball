@@ -1,9 +1,14 @@
 import * as THREE from "three";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { BallView } from "./ball";
 import { type CameraMode, CameraRig } from "./camera";
 import { OriginalCharacterSystem } from "./originalCharacters";
-import { type PoolBounds, type RenderSnapshot, toWorld } from "./renderState";
+import { type PoolBounds, poolCentreWorld, type RenderSnapshot, toWorld } from "./renderState";
 import { createScene, createStadium, createWebGLRenderer, type Stadium } from "./scene";
+import { addCaustics, createLightShafts, createUnderwaterUniforms, updateUnderwaterFog } from "./underwater";
 import { Vfx } from "./vfx";
 
 export type { CameraMode } from "./camera";
@@ -32,14 +37,50 @@ export function createRenderer(container: HTMLElement, initialPool: PoolBounds =
   const renderer = createWebGLRenderer(container);
   const scene = createScene();
   const rig = new CameraRig(renderer.domElement, initialPool, aspectOf(container));
-  const characters = new OriginalCharacterSystem();
+  const underwater = createUnderwaterUniforms();
+  const characters = new OriginalCharacterSystem(underwater);
   const ball = new BallView();
+  ball.group.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (m.isMesh && !Array.isArray(m.material)) addCaustics(m.material, underwater);
+  });
   const vfx = new Vfx(initialPool);
   scene.add(characters.group, ball.group, vfx.group);
 
   let stadium: Stadium = createStadium(initialPool);
   let currentPoolKey = poolKey(initialPool);
   scene.add(stadium.group);
+  let shafts = setSphere(initialPool);
+  const underwaterAmount = { value: 0 };
+
+  // Bloom makes the caustics, sun shafts and glows bleed light like the original's water
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, rig.camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.45, 0.55, 0.82);
+  composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+
+  /** Point the underwater lighting at the pool's sphere and (re)build the sun shafts inside it. */
+  function setSphere(pool: PoolBounds): THREE.Group {
+    const c = poolCentreWorld(pool);
+    underwater.uSphereCenter.value.set(c.x, c.y, c.z);
+    underwater.uSphereRadius.value = (pool.maxZ - pool.minZ) / 2;
+    const g = createLightShafts(underwater.uSphereCenter.value, underwater.uSphereRadius.value, underwater);
+    scene.add(g);
+    return g;
+  }
+
+  function disposeShafts(g: THREE.Group): void {
+    const seen = new Set<{ dispose(): void }>();
+    g.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      seen.add(m.geometry);
+      seen.add(m.material as THREE.Material);
+    });
+    for (const d of seen) d.dispose();
+    g.removeFromParent();
+  }
 
   let contextLost = false;
   let disposed = false;
@@ -65,6 +106,7 @@ export function createRenderer(container: HTMLElement, initialPool: PoolBounds =
     const w = Math.max(1, container.clientWidth);
     const h = Math.max(1, container.clientHeight);
     renderer.setSize(w, h, false);
+    composer.setSize(w, h);
     rig.setAspect(w / h);
   }
 
@@ -81,6 +123,8 @@ export function createRenderer(container: HTMLElement, initialPool: PoolBounds =
     scene.add(stadium.group);
     rig.setPool(pool);
     vfx.setPool(pool);
+    disposeShafts(shafts);
+    shafts = setSphere(pool);
   }
 
   function update(snapshot: RenderSnapshot, dt: number): void {
@@ -90,6 +134,7 @@ export function createRenderer(container: HTMLElement, initialPool: PoolBounds =
     ensurePool(snapshot.pool);
 
     stadium.update(time);
+    underwater.uTime.value = time;
     characters.update(snapshot.players, safeDt, rig.camera, snapshot.selectedPlayerId, snapshot.ball.carrierId);
     const carrier = snapshot.ball.carrierId;
     const held = carrier !== null && characters.getHandWorldPosition(carrier, handPos) ? handPos : null;
@@ -118,12 +163,13 @@ export function createRenderer(container: HTMLElement, initialPool: PoolBounds =
       }
     }
     rig.update(safeDt, { focus, ball: ballWorld, zoom });
+    updateUnderwaterFog(scene, rig.camera, underwater, underwaterAmount, safeDt);
 
     if (contextLost) return;
     const size = renderer.getSize(new THREE.Vector2());
     if (size.x < 1 || size.y < 1) return;
     try {
-      renderer.render(scene, rig.camera);
+      composer.render(safeDt);
     } catch (err) {
       // Keep the loop alive; a lost context or a transient shader error should not kill the app.
       console.error("[render] frame failed", err);
@@ -138,6 +184,8 @@ export function createRenderer(container: HTMLElement, initialPool: PoolBounds =
     renderer.domElement.removeEventListener("webglcontextlost", onLost);
     renderer.domElement.removeEventListener("webglcontextrestored", onRestored);
     stadium.dispose();
+    disposeShafts(shafts);
+    composer.dispose();
     characters.dispose();
     ball.dispose();
     vfx.dispose();

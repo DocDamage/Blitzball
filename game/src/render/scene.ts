@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { loadOriginalStadium } from "./originalStadium";
 import { GOAL_HEIGHT, GOAL_WIDTH, type PoolBounds, poolCentreWorld } from "./renderState";
+import { CAUSTIC_GLSL } from "./underwater";
 
 export const FOG_COLOR = 0x04101c;
 export const WATER_SHALLOW = new THREE.Color(0x3fb8ff);
@@ -74,6 +75,7 @@ uniform vec3 uShallow;
 uniform vec3 uDeep;
 uniform float uBaseAlpha;
 uniform float uFresnelAlpha;
+uniform vec3 uCentre;
 varying vec3 vWorldPos;
 varying vec3 vNormal;
 
@@ -87,30 +89,53 @@ float noise(vec2 p) {
     mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
     f.y);
 }
-float caustic(vec2 p, float t) {
-  float n1 = noise(p * 0.28 + vec2(t * 0.16, -t * 0.11));
-  float n2 = noise(p * 0.41 - vec2(t * 0.13, t * 0.18) + 3.1);
-  float c = 1.0 - abs(n1 - n2) * 2.4;
-  return clamp(c, 0.0, 1.0);
+// a few octaves of drifting noise: the height of the surface ripples
+float ripples(vec2 p, float t) {
+  float h = noise(p * 0.11 + vec2(t * 0.07, t * 0.05)) * 0.55;
+  h += noise(p * 0.23 - vec2(t * 0.11, -t * 0.09)) * 0.3;
+  h += noise(p * 0.51 + vec2(-t * 0.19, t * 0.17)) * 0.15;
+  return h;
 }
+${CAUSTIC_GLSL}
 
 void main() {
   vec3 V = normalize(cameraPosition - vWorldPos);
   vec3 N = normalize(vNormal);
-  if (!gl_FrontFacing) N = -N;
-  float ndv = max(dot(N, V), 0.0);
-  float fres = pow(1.0 - ndv, 2.6);
-  float c = caustic(vWorldPos.xz + vWorldPos.y * 0.35, uTime);
-  c = pow(c, 7.0);
-  // slight refraction-ish shimmer on the rim
-  float shimmer = noise(vWorldPos.xy * 0.6 + uTime * 0.25) * 0.15;
-  vec3 col = mix(uDeep, uShallow, fres + shimmer) + c * 0.45 * uShallow;
-  float a = uBaseAlpha + fres * uFresnelAlpha + c * 0.18;
-  gl_FragColor = vec4(col, clamp(a, 0.0, 1.0));
+  bool fromInside = !gl_FrontFacing;
+  if (fromInside) N = -N;
+  // perturb the surface normal with the ripple slope (surface coordinates from the sphere's lat/long)
+  vec3 d = normalize(vWorldPos - uCentre);
+  vec2 sp = vec2(atan(d.z, d.x), asin(clamp(d.y, -1.0, 1.0))) * 60.0;
+  float e = 0.6;
+  float h0 = ripples(sp, uTime);
+  vec2 slope = vec2(ripples(sp + vec2(e, 0.0), uTime) - h0, ripples(sp + vec2(0.0, e), uTime) - h0) / e;
+  vec3 T = normalize(cross(vec3(0.0, 1.0, 0.0), d) + vec3(1e-4));
+  vec3 B = normalize(cross(d, T));
+  N = normalize(N + (T * slope.x + B * slope.y) * 2.2);
+
+  float ndv = clamp(dot(N, V), 0.0, 1.0);
+  float fres = pow(1.0 - ndv, 3.0);
+  float c = uwCaustic(sp / 40.0, uTime * 0.5);
+  vec3 col;
+  float a;
+  if (fromInside) {
+    // Snell's window: inside ~48 degrees of the normal you see out; beyond it the surface mirrors the water
+    float window = smoothstep(0.62, 0.72, ndv);
+    vec3 mirror = mix(uDeep, uShallow, 0.55 + 0.45 * h0) + vec3(0.7, 0.9, 1.0) * c * 0.35;
+    vec3 through = uShallow * 0.35;
+    col = mix(mirror, through, window);
+    a = mix(uBaseAlpha + 0.55, uBaseAlpha * 0.6, window) + c * 0.12;
+  } else {
+    col = mix(uDeep, uShallow, 0.35 + fres * 0.65) + vec3(0.8, 0.95, 1.0) * c * 0.25;
+    a = uBaseAlpha + fres * uFresnelAlpha + c * 0.1;
+  }
+  // bright meniscus where the surface turns away from the eye
+  col += vec3(0.6, 0.9, 1.0) * pow(1.0 - abs(dot(normalize(vNormal), V)), 6.0) * 0.6;
+  gl_FragColor = vec4(col, clamp(a, 0.0, 0.92));
 }
 `;
 
-function makeWaterMaterial(side: THREE.Side, uTime: THREE.IUniform<number>, baseAlpha: number) {
+function makeWaterMaterial(side: THREE.Side, uTime: THREE.IUniform<number>, baseAlpha: number, centre: THREE.Vector3) {
   return new THREE.ShaderMaterial({
     vertexShader: WATER_VERT,
     fragmentShader: WATER_FRAG,
@@ -120,6 +145,7 @@ function makeWaterMaterial(side: THREE.Side, uTime: THREE.IUniform<number>, base
       uDeep: { value: WATER_DEEP },
       uBaseAlpha: { value: baseAlpha },
       uFresnelAlpha: { value: side === THREE.BackSide ? 0.35 : 0.6 },
+      uCentre: { value: centre },
     },
     transparent: true,
     depthWrite: false,
@@ -178,8 +204,9 @@ export function createStadium(pool: PoolBounds): Stadium {
   // --- water volume -------------------------------------------------------
   const waterGeo = new THREE.SphereGeometry(sphereRadius + 1, 96, 64);
   disposables.push(waterGeo);
-  const backMat = makeWaterMaterial(THREE.BackSide, uTime, 0.15);
-  const frontMat = makeWaterMaterial(THREE.FrontSide, uTime, 0.09);
+  const centre = new THREE.Vector3(c.x, c.y, c.z);
+  const backMat = makeWaterMaterial(THREE.BackSide, uTime, 0.15, centre);
+  const frontMat = makeWaterMaterial(THREE.FrontSide, uTime, 0.09, centre);
   disposables.push(backMat, frontMat);
   const waterBack = new THREE.Mesh(waterGeo, backMat);
   const waterFront = new THREE.Mesh(waterGeo, frontMat);
