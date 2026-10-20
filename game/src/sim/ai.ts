@@ -212,7 +212,8 @@ function carrierIntent(m: Match, p: PlayerState, profile: TeamAiProfile): Player
     if (boostedChance > plainChance) shotChance = boostedChance;
     else shotTech = undefined;
   }
-  const inRange = m.shotInRange(p) && shotChance >= AI_SHOT_MIN_CHANCE;
+  // close to goal the original AI shoots on weight alone; further out we also require a minimal estimated chance
+  const inRange = m.shotInRange(p) && (shotChance >= AI_SHOT_MIN_CHANCE || zone >= 5);
   const wantShot = inRange && m.rng.float() * (st.pa * w.pass + shotWeight) < shotWeight;
   if (wantShot) {
     return { sprint: false, action: { kind: "shoot", aim: bestShotAim(m, p), techniqueId: shotTech?.id } };
@@ -228,7 +229,8 @@ function carrierIntent(m: Match, p: PlayerState, profile: TeamAiProfile): Player
       action: { kind: "pass", targetId: target.id, techniqueId: pickTechnique(m, p, "pass", w)?.id },
     };
   }
-  if (forced && m.shotInRange(p) && shotChance > 0) {
+  // a carrier who has held the ball too long shoots even against a hopeless keeper rather than parking
+  if (forced && m.shotInRange(p)) {
     return { sprint: false, action: { kind: "shoot", aim: bestShotAim(m, p) } };
   }
   return dribble(m, p, w);

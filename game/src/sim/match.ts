@@ -92,6 +92,7 @@ import {
   SHOT_BASE_SPEED,
   SHOT_MISS_SPREAD,
   SHOT_SPEED_PER_SH,
+  SPEED_BASE,
   SPEED_PER_SP,
   SPRINT_HP_PER_SECOND,
   SPRINT_MULT,
@@ -720,7 +721,7 @@ export class Match {
 
   /** Swim speed in pool units/s: proportional to SP (sprint is a sim extension). */
   speedOf(p: PlayerState, sprint: boolean): number {
-    let speed = this.effectiveStats(p).sp * SPEED_PER_SP;
+    let speed = SPEED_BASE + this.effectiveStats(p).sp * SPEED_PER_SP;
     if (sprint && p.hp > 0) speed *= SPRINT_MULT;
     if (p.hasBall) speed *= CARRY_SPEED_MULT;
     return speed;

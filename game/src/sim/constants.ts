@@ -38,7 +38,7 @@ export const RESET_FREEZE_SECONDS = 1.5;
 /** Half extents of the axis-aligned pool box: 60 long (x), 40 across (y), 30 deep (z). */
 export const POOL_HALF = Object.freeze({ x: 30, y: 20, z: 15 });
 /** Original script distance units per pool unit (encounter radius 130 -> 3.25 pool units). */
-export const ORIG_UNITS_PER_POOL_UNIT = 60;
+export const ORIG_UNITS_PER_POOL_UNIT = 45;
 export function origUnits(u: number): number {
   return u / ORIG_UNITS_PER_POOL_UNIT;
 }
@@ -55,7 +55,9 @@ export const KICKOFF_MAX_LOCAL_X = -0.15;
 
 // ---------------------------------------------------------------- movement
 /** Movement speed is the SP stat used directly in the original; here SP * SPEED_PER_SP pool units/s. */
-export const SPEED_PER_SP = 0.07; // SP 60 -> 4.2 units/s
+export const SPEED_PER_SP = 0.04; // SP 40 -> 3.4, SP 60 -> 4.2, SP 99 -> 5.8 units/s
+/** Base swim speed added to SP * SPEED_PER_SP: compresses SP differences so slow teams stay playable in real time. */
+export const SPEED_BASE = 1.8;
 /** Sprint is a sim extension (no sprint in the original): faster, costs HP. */
 export const SPRINT_MULT = 1.35;
 export const SPRINT_HP_PER_SECOND = 1.5;
@@ -94,12 +96,12 @@ export const PASS_OVERSHOOT = 2.5;
 /** Pass "leads" the receiver by this many seconds of their current velocity. */
 export const PASS_LEAD_SECONDS = 0.35;
 /** Sim extension: a defender the ball flies past may try one block roll if within this reach. */
-export const BLOCK_REACH_BASE = 0.9;
-export const BLOCK_REACH_PER_BL = 0.08;
+export const BLOCK_REACH_BASE = 0.6;
+export const BLOCK_REACH_PER_BL = 0.05;
 /** A pass cannot be lane-blocked until it has travelled this far from the passer. */
 export const PASS_CONTEST_MIN_TRAVEL = 1.5;
 /** Shots are aimed at the goal mouth with a small random scatter (the original always reached the goalie). */
-export const SHOT_MISS_SPREAD = 0.25;
+export const SHOT_MISS_SPREAD = 0.6;
 export const SHOT_ACCURACY_BASE = 8;
 /** Aimed shots (Jecht Shot 2 / Invisible Shot): caught when the keeper is within this of the crossing point (original 56 px). */
 export const AIMED_SHOT_CATCH_RADIUS = 1.4;
@@ -162,7 +164,7 @@ export const FUMBLE_SPEED = 2;
 /** Minimum ticks a receiver keeps the ball before acting again when not pressured. */
 export const AI_MIN_HOLD_TICKS = 45;
 /** After holding the ball this long the AI carrier forces a shot or pass (no parking). */
-export const AI_MAX_HOLD_TICKS = 240;
+export const AI_MAX_HOLD_TICKS = 150;
 /** Per decision, chance (%) that an unpressured CPU carrier acts, by zone 0..6 (original per waypoint). */
 export const AI_ACT_PCT_BY_ZONE: readonly number[] = [10, 30, 50, 70, 80, 90, 100];
 /** Scale of AI_ACT_PCT_BY_ZONE per decision tick (decisions are far more frequent than waypoints). */
@@ -172,7 +174,7 @@ export const AI_DRIBBLE_PCT_BY_ZONE: readonly number[] = [70, 60, 60, 50, 50, 40
 /** Shoot weight multiplier of SH by zone: shoot if rand(PA + w) < w. */
 export const AI_SHOT_WEIGHT_BY_ZONE: readonly number[] = [1 / 16, 1 / 8, 1 / 4, 1 / 2, 1, 2, 9];
 /** The AI only shoots when its estimated chance of beating the goalie roll is at least this. */
-export const AI_SHOT_MIN_CHANCE = 0.2;
+export const AI_SHOT_MIN_CHANCE = 0.03;
 /** Supporting teammates offer themselves this far ahead / beside the carrier. */
 export const AI_SUPPORT_AHEAD = 4;
 export const AI_SUPPORT_SIDE = 3.5;
