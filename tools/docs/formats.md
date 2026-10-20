@@ -84,3 +84,22 @@ floor; cap 9999 (HP) / 99. Validated against 473 of 480 community level-99 value
 
 Names: fid 00410 chunk 1 (players, index 2..59; 0 and 1 are the Tidus/Wakka name macros), chunk 2 (techniques 1..60,
 formations 61..69, teams 70..75, prizes 86..89). Technique descriptions: event bltz0200 (fid 06731) string `41 + techId`.
+
+## New-game Blitzball state (event bltz0200 = fid 06731)
+
+The init worker writes the save-RAM arrays: `BlitzballTeamPlayers[48]` (6 teams x 8 slots, 0x3C = empty),
+`BlitzballPlayerCurrentLevel/CurrentEXP/UnlockedTechSlots/ContractDurations/CostPerGame[60]`,
+`BlitzballPlayerEquippedTechs[300]` (5 slots per player) and `BlitzballPlayerLearnedTechsPage1/2[60]` bitmasks.
+Extracted by `tools/extract/init_state.py` from the FFXDataParser decompilation into `data/json/rosters.json`.
+
+Technique bitmasks: page 1 bit `b` = technique `b` (1..31); page 2 bit `b` = technique `30 + b` (32..60).
+Shared tables 0x133/0x134 hold four such mask pairs per player = four learnable tiers; 0x135 holds the three level
+thresholds that open tiers 2..4 (interpretation; the match script's "level is too low" check is the evidence to confirm).
+
+## Textures
+
+Texture container (standalone fid entries, and embedded at 16-byte aligned offsets inside packs and maps):
+`u32 1, u32 count`, then at +0x10 `count` x { u16 width, u16 height, u8 bpp (4|8), u8[3], u32 clut_offset, u32 pixel_offset }.
+CLUT entries are RGBA with PS2 alpha (0x80 = opaque); 8-bit CLUTs use the GS CSM1 order (index bits 3 and 4 swapped).
+Pixels are linear, row-major. Converter: `tools/extract/textures.py`; embedded scanner: `tools/extract/texscan.py`.
+Verified visually on the memory-card install screens (fid 00360) and the Blitzball prize/gil menu (fid 00366).

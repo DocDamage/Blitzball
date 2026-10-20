@@ -243,6 +243,8 @@ function carrierIntent(m: Match, p: PlayerState, profile: TeamAiProfile): Player
   const dGoal = dist(p.pos, goal);
   let dribbleU = (clamp01(dOpp / 8) * 0.55 + 0.25 * (1 - dGoal / 60)) * w.dribble + noise(m, profile);
   if (held < AI_MIN_HOLD_TICKS) dribbleU += 0.45;
+  // along the goal line there is nowhere left to dribble to
+  if (dGoal < 10) dribbleU -= 0.3;
   if (dOpp < 3) {
     // pressured: dribbling only looks good if EN should beat their AT
     let at = 0;
@@ -250,6 +252,11 @@ function carrierIntent(m: Match, p: PlayerState, profile: TeamAiProfile): Player
     dribbleU -= 0.35 * (1 - st.en / (st.en + at + 0.01));
   }
 
+  // held far too long (parked in a corner, no lane): force something to happen
+  if (held > AI_MAX_HOLD_TICKS) {
+    if (sq > 0.05 || !bestPass) return { sprint: false, action: { kind: "shoot", aim: bestShotAim(m, p) } };
+    return { moveTo: p.pos, sprint: false, action: { kind: "pass", targetId: bestPass.id } };
+  }
   if (sq > AI_SHOT_MIN_QUALITY && shootU >= passU && shootU >= dribbleU) {
     return { sprint: false, action: { kind: "shoot", aim: bestShotAim(m, p), techniqueId: pickTechnique(m, p, "shot", w)?.id } };
   }
@@ -350,8 +357,9 @@ function keeperIntent(m: Match, p: PlayerState): PlayerIntent {
     }
     return { moveTo: add(own, v3(inward * 2, 0, 0)), sprint: false };
   }
-  let y = Math.max(-GOAL_HALF_HEIGHT + 0.5, Math.min(GOAL_HALF_HEIGHT - 0.5, ball.pos.y * 0.7));
-  let z = Math.max(-GOAL_HALF_DEPTH + 0.5, Math.min(GOAL_HALF_DEPTH - 0.5, ball.pos.z * 0.7));
+  const c = AI_KEEPER_TRACK_CLAMP;
+  let y = Math.max(-c, Math.min(c, ball.pos.y * AI_KEEPER_TRACK));
+  let z = Math.max(-c, Math.min(c, ball.pos.z * AI_KEEPER_TRACK));
   let sprint = false;
   if (ball.flight?.kind === "shot" && ball.flight.team !== p.team && Math.abs(ball.vel.x) > 1e-6) {
     // extrapolate the shot to the goal plane

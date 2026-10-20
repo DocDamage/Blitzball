@@ -40,6 +40,7 @@ import {
   NAP_SPEED_MULT,
   PASS_ACCURACY_BASE,
   PASS_BASE_SPEED,
+  PASS_CONTEST_MIN_TRAVEL,
   PASS_LEAD_SECONDS,
   PASS_MIN_POWER_FRAC,
   PASS_MISS_SPREAD,
@@ -806,9 +807,12 @@ export class Match {
     const tech = f.techniqueId ? getTechnique(f.techniqueId) : undefined;
     // interception attempts by opponents in reach (one try per defender per pass)
     for (const q of s.players) {
+      if (f.travelled < PASS_CONTEST_MIN_TRAVEL) break;
       if (q.team === f.team || f.contested.includes(q.id) || !this.canContest(q)) continue;
       const reach = BLOCK_REACH_BASE + this.effectiveStats(q).bl * BLOCK_REACH_PER_BL;
       if (dist(q.pos, b.pos) > reach) continue;
+      // only a defender the ball is still approaching (or level with) can reach it
+      if (dot(b.vel, sub(q.pos, b.pos)) < -0.5 * reach * len(b.vel)) continue;
       const blockTech = this.autoTechnique(q, "block");
       const bl = (this.effectiveStats(q).bl + (blockTech?.statMods.bl ?? 0)) * this.spread();
       const pa = this.passPower(f) * this.spread();

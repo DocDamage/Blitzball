@@ -78,7 +78,7 @@ export const TACKLE_WHIFF_STUN_SECONDS = 0.7;
 export const SHOT_BASE_SPEED = 15;
 export const SHOT_SPEED_PER_SH = 0.35;
 export const SHOT_MAX_RANGE = 24;
-export const SHOT_POWER_DECAY_PER_UNIT = 0.5;
+export const SHOT_POWER_DECAY_PER_UNIT = 0.6;
 /** Each blocker in reach subtracts BL * spread * this from the shot power. */
 export const SHOT_BLOCK_FACTOR = 0.45;
 export const SHOT_MISS_SPREAD = 0.55;
@@ -86,7 +86,7 @@ export const SHOT_ACCURACY_BASE = 6;
 export const SAVE_RADIUS_BASE = 4.0;
 export const SAVE_RADIUS_PER_CA = 0.35;
 /** Keeper CA is multiplied by this in the save contest. */
-export const KEEPER_SAVE_MULT = 2.0;
+export const KEEPER_SAVE_MULT = 1.5;
 export const KEEPER_HOLD_SECONDS = 0.8;
 export const KEEPER_MAX_HOLD_SECONDS = 3.0;
 
@@ -123,7 +123,9 @@ export const AI_ATTACK_SHIFT = 0.35;
 export const AI_DEFENSE_SHIFT = -0.3;
 export const AI_LANE_CLEAR_DIST = 4;
 /** After holding the ball this long the AI carrier forces a shot or pass (no parking). */
-export const AI_MAX_HOLD_TICKS = 300;
+export const AI_MAX_HOLD_TICKS = 180;
 /** Keeper follows the ball's y/z by this factor, clamped to +-AI_KEEPER_TRACK_CLAMP units. */
 export const AI_KEEPER_TRACK = 0.4;
 export const AI_KEEPER_TRACK_CLAMP = 3;
+/** A pass cannot be contested until it has travelled this far from the passer. */
+export const PASS_CONTEST_MIN_TRAVEL = 1.5;
