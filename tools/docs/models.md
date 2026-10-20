@@ -112,3 +112,18 @@ Model space is Y-down.
   joint position at load time (`game/src/render/retarget.ts`); only the Ronso keep their own set.
 * The sim's play volume is now a sphere (`POOL_RADIUS`, `FIELD_SCALE` 2.3, `SPEED_SCALE` 1.6); balance batch
   over 240 matches: 5.8 goals/match, 23.8 shots, 75% on target, 60% passes.
+
+## Session 5 (2026-10-20): portraits and logos
+
+Third pass at the 2D Blitzball art, still not found. Ruled out:
+* Event files (`EV01`: script, shared data, SEP pack; no textures), the format-A texture containers anywhere in the dump
+  (only the memory-card/prize screens), the system sheets 00416-00425 (party/aeon faces, word sheets), and module 37
+  (00442 is the **Sphere Grid** texture dump: a mix of linear 128-wide and swizzled images, S.LVL, node icons).
+* `imgmine.py` (block-smoothness scan over every dumped file for GS-layout images) only turns up audio and model data;
+  exact-size headerless sheets (`00417/00422/00423/00416/00421`, model textures like 12134/13604) are the only linear 8-bit art.
+* The EE call table for script calls was not located (the 342-entry tables at 0x552cc0/0x553220 are switch tables), so
+  the native `setSplashSprite` handler and the splash texture source are still unresolved.
+Model textures (type2 `modelN_tex00.png`) contain each blitzer's face, and are the only face art found.
+`game/src/render/portraits.ts` therefore renders a head-and-shoulders view of each player's original model
+(`game/portraits.html` shows the whole sheet). Free agents have no model; the two bent-pose Guado models (25, 26) are skipped.
+No team logos were found (crests only exist as small details on the uniform textures).

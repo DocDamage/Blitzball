@@ -644,3 +644,17 @@ input[type="range"] {
   pointer-events: none;
   white-space: pre;
 }
+
+.card .portrait {
+  display: none;
+  float: right;
+  width: 76px;
+  height: 76px;
+  margin: 0 0 0.4em 0.7em;
+  border-radius: 8px;
+  background: linear-gradient(#2a4a66, #17293a);
+  box-shadow: 0 0 0 1px rgba(160, 210, 255, 0.25);
+}
+.card .portrait.ready {
+  display: block;
+}

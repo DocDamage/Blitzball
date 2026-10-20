@@ -28,6 +28,7 @@ import {
   releasePlayer,
   renewContract,
 } from "../league";
+import { portraitFor } from "../render/portraits";
 import type { App } from "./app";
 import { button, fmtGil, h } from "./dom";
 
@@ -169,9 +170,20 @@ export function playerCard(app: App, pid: number, opts: CardOptions = {}): HTMLE
     }
   }
 
+  // portrait rendered from the player's original model; stays hidden for free agents and without the assets
+  const portrait = document.createElement("img");
+  portrait.className = "portrait";
+  portrait.alt = "";
+  void portraitFor(pid).then((url) => {
+    if (!url || !portrait.isConnected) return;
+    portrait.src = url;
+    portrait.classList.add("ready");
+  });
+
   return h(
     "div",
     { class: "card" },
+    portrait,
     h("h3", { text: def.name }),
     h("div", { class: "muted", text: `${teamName} · Level ${p.level} · ${p.exp} EXP` }),
     h(

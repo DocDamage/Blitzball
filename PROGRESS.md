@@ -45,8 +45,9 @@ palette, screen-shake and reduced-flash toggles, three difficulty levels (AI rea
   in the carrier's hand, and bent team models now use Tidus's motions retargeted by joint position.
   Session 5: the match ball is now the original blitzball model (Wakka's starting ball, type4 mdl0025, loaded from
   /ffx/models/type4/mdl0025/ with the procedural sphere as fallback). Free agents (modelIndex 34..54) have no BLZ_*
-  model in the disc's model list, so they keep their team's uniform models. Still open: portraits/logos (2D leads in
-  models.md).
+  model in the disc's model list, so they keep their team's uniform models. Portraits: the disc's 2D Blitzball portrait art and team logos were not found after three sessions
+  (tools/docs/models.md), so player cards show head-and-shoulders renders of each player's original model
+  (render/portraits.ts, game/portraits.html); free agents and two bent-pose Guado models get none. Team logos: none.
 * Sound: DONE (session 5). The IOP sequencer opcodes, sound banks and Blitzball sfx ids are decoded; `tools/extract/export_audio.py`
   renders the original sound effects and music (Blitz Off!, The Blitzers, ...) into game/public/ffx/audio and the engine plays
   them (audio/samples.ts), keeping the procedural cues for sounds the original has no counterpart for and as the fallback.

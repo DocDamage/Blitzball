@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Blitzball - portrait sheet</title>
+    <style>
+      body { margin: 0; background: #12202e; color: #cfe; font: 12px system-ui; }
+      #sheet { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; }
+      figure { margin: 0; text-align: center; }
+      img { width: 128px; height: 128px; background: #223a50; display: block; }
+    </style>
+  </head>
+  <body>
+    <div id="sheet"></div>
+    <script type="module">
+      import { portraitFor } from "/src/render/portraits.ts";
+      const players = await (await fetch("/data/json/players.json")).json().catch(() => null);
+      const sheet = document.getElementById("sheet");
+      const q = new URLSearchParams(location.search);
+      const opts = { facePositiveZ: q.get("flip") !== "1" };
+      for (let id = 0; id < 60; id++) {
+        const url = await portraitFor(id, opts);
+        if (!url) continue;
+        const fig = document.createElement("figure");
+        const img = new Image();
+        img.src = url;
+        const cap = document.createElement("figcaption");
+        cap.textContent = String(id);
+        fig.append(img, cap);
+        sheet.append(fig);
+      }
+      document.title += " (done)";
+    </script>
+  </body>
+</html>
