@@ -22,8 +22,8 @@ vitest + Biome scaffold in `game/`, `.claude/launch.json` (`game` config, port 5
 `game/src/sim/`: fixed-step headless match, seeded RNG, utility AI, formations/marking, statuses, techniques, techcopy,
 event log, stats. 19 tests pass; a full match simulates in ~0.2 s.
 
-## Milestone 3 - 3D presentation: IN PROGRESS
-## Milestone 4 - league layer: IN PROGRESS
+## Milestone 3 - 3D presentation: scene DONE (`game/src/render`, demo in main.ts); HUD + control modes pending integration
+## Milestone 4 - league layer: DONE (`game/src/league`, `game/src/data`, 48 tests); menus pending integration
 ## Milestone 5 - polish: not started
 
 ## Open questions (plan section 10) - working assumptions
