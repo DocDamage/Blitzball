@@ -67,3 +67,31 @@ if __name__ == "__main__":
             p = out / f"{fid}_{i}.png"; img.save(p); manifest.append({"fid": int(fid), "index": i, "file": p.name, "size": img.size})
     json.dump(manifest, open(out / "manifest.json", "w"), indent=0)
     print("wrote", len(manifest), "textures")
+
+
+# ---- Format B: raw texture with 16-byte header {u32 width, u32 height, u32 a, u32 b}, CLUT, pixels ----
+def parse_raw(b: bytes):
+    if len(b) < 16: return None
+    w, h, a, c = struct.unpack_from("<IIII", b, 0)
+    if not (8 <= w <= 1024 and 8 <= h <= 1024 and w & (w - 1) == 0 and h & (h - 1) == 0): return None
+    if len(b) == 16 + 1024 + w * h: return (w, h, 8)
+    if len(b) == 16 + 64 + w * h // 2: return (w, h, 4)
+    return None
+
+def raw_to_image(b: bytes):
+    p = parse_raw(b)
+    if not p: return None
+    w, h, bpp = p
+    n = 256 if bpp == 8 else 16
+    raw = [tuple(b[16 + i * 4: 16 + i * 4 + 4]) for i in range(n)]
+    if bpp == 8: raw = unswizzle_clut(raw)
+    pal = [(r, g, bl, min(255, a * 2)) for r, g, bl, a in raw]
+    img = Image.new("RGBA", (w, h)); px = img.load()
+    base = 16 + n * 4
+    for y in range(h):
+        for x in range(w):
+            if bpp == 8: idx = b[base + y * w + x]
+            else:
+                v = b[base + (y * w + x) // 2]; idx = v & 0xF if x % 2 == 0 else v >> 4
+            px[x, y] = pal[idx]
+    return img
