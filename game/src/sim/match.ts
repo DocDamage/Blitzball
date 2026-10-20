@@ -117,6 +117,7 @@ import {
   CONTEST_STATS,
   type ContestStat,
   type FormationId,
+  type MarkAssignments,
   type MatchEvent,
   type MatchEventPayload,
   type MatchState,
@@ -251,6 +252,7 @@ export class Match {
       possessionTicks: [0, 0],
       attackDir: [1, -1],
       formations: [home.formation, away.formation],
+      marks: [{ ...home.marks }, { ...away.marks }],
       players,
       ball: { pos: v3(0, 0, 0), vel: v3(0, 0, 0), carrier: null, flight: null, lastTouch: null },
       rngState: this.rng.state,
@@ -393,9 +395,15 @@ export class Match {
     return slotToWorld(preset.slots[p.role], this.attackDir(p.team), shiftX);
   }
 
-  /** The opposing player this player marks, per the formation preset (null = press). */
+  /** Replace a team's Mark Mode assignments (roles left out fall back to the formation preset). */
+  setMarks(team: Team, marks: MarkAssignments): void {
+    this.state.marks[team] = { ...marks };
+  }
+
+  /** The opposing player this player marks: the team's Mark Mode choice, else the formation preset (null = press). */
   markTarget(p: PlayerState): PlayerState | null {
-    const role = FORMATIONS[this.state.formations[p.team]].marks[p.role];
+    const override = this.state.marks[p.team][p.role];
+    const role = override !== undefined ? override : FORMATIONS[this.state.formations[p.team]].marks[p.role];
     if (!role) return null;
     const other = (1 - p.team) as Team;
     return this.state.players.find((q) => q.team === other && q.role === role) ?? null;

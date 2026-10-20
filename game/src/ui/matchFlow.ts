@@ -32,12 +32,10 @@ import { button, empty, h } from "./dom";
 import { loadRuntime, type MatchHandle, type MatchOptions, type MatchOutcome, type MatchRuntime } from "./runtime";
 import { formationEditor } from "./screens/formation";
 import { type KeyBindings, type Settings, toRuntimeBindings } from "./settings";
-import { loadMarks, type Marks, simFormation } from "./tactics";
-
-export type TeamDefWithMarks = TeamDef & { marks?: Marks };
+import { loadMarks, simFormation } from "./tactics";
 
 /** Sim TeamDef for a team as it stands in the league right now. */
-export function buildTeamDef(state: LeagueState, teamId: number): TeamDefWithMarks {
+export function buildTeamDef(state: LeagueState, teamId: number): TeamDef {
   const data = loadGameData();
   const team = state.teams[teamId];
   const specs: RosterPlayerSpec[] = teamPlayerIds(state, teamId).map((pid) => {
@@ -50,7 +48,7 @@ export function buildTeamDef(state: LeagueState, teamId: number): TeamDefWithMar
     };
   });
   const formation = simFormation(team.formation);
-  const def: TeamDefWithMarks = teamDefFromPlayers(data, teamId, specs, { formation });
+  const def: TeamDef = teamDefFromPlayers(data, teamId, specs, { formation });
   def.marks = loadMarks(teamId, formation);
   return def;
 }

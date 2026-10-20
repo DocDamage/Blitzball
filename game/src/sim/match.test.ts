@@ -312,6 +312,23 @@ describe("rules", () => {
     expect(m.formationSlot(jassu)).not.toEqual(before);
   });
 
+  it("honours Mark Mode assignments over the formation preset", () => {
+    const m = playingMatch();
+    const jassu = m.player("jassu");
+    expect(m.markTarget(jassu)?.role).toBe("RF");
+    m.setMarks(0, { [jassu.role]: "MF" });
+    expect(m.markTarget(jassu)?.role).toBe("MF");
+    expect(m.markTarget(jassu)?.team).toBe(1);
+    m.setMarks(0, { [jassu.role]: null });
+    expect(m.markTarget(jassu)).toBeNull();
+    // the other team's assignments are untouched
+    const opp = m.state.players.find((q) => q.team === 1 && q.role === "LF");
+    const presetMark = FORMATIONS[m.state.formations[1]].marks.LF;
+    expect(opp && m.markTarget(opp)?.role).toBe(presetMark ?? undefined);
+    m.setMarks(0, {});
+    expect(m.markTarget(jassu)?.role).toBe("RF");
+  });
+
   it("caps pending EXP at 250 and doubles awards with Hi-Risk", () => {
     const m = playingMatch();
     const p = m.player("letty");

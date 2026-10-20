@@ -67,7 +67,12 @@ export interface TeamDef {
   formation: FormationId;
   /** Team personality used by the AI (defaults to "balanced"). */
   personality?: Personality;
+  /** Mark Mode: per-role overrides of the formation's marking assignments (null = press the carrier). */
+  marks?: MarkAssignments;
 }
+
+/** Which opposing role each of our roles marks when defending; roles left out use the formation preset. */
+export type MarkAssignments = Partial<Record<Role, Role | null>>;
 
 /** Runtime status kinds: Venom = poison, Nap = sleep, Wither halves a stat. Drain is instant. */
 export type StatusKind = "poison" | "sleep" | "wither";
@@ -250,6 +255,8 @@ export interface MatchState {
   /** +1 or -1: the x direction each team attacks toward in the current period. */
   attackDir: [1 | -1, 1 | -1];
   formations: [FormationId, FormationId];
+  /** Mark Mode overrides per team (see TeamDef.marks). */
+  marks: [MarkAssignments, MarkAssignments];
   players: PlayerState[];
   ball: BallState;
   rngState: number;

@@ -45,7 +45,8 @@ palette, screen-shake and reduced-flash toggles, three difficulty levels (AI rea
   in the carrier's hand, and bent team models now use Tidus's motions retargeted by joint position.
   Still open: free agents' own models, the original blitzball model, portraits/logos (2D leads in models.md).
 * EXP-to-level thresholds are fitted to the new-game roster data (native code, not in the script).
-* Mark Mode assignments are stored by the UI but not yet consumed by the simulation.
+* Mark Mode: DONE - `TeamDef.marks` / `Match.setMarks` override the formation preset's marking (sim/match.ts `markTarget`).
+* Underwater lighting (caustics, sun shafts, fog shift, bloom) is in `render/underwater.ts`.
 * Balance pass (2026-10-20, session 2): headless batch over all 30 matchups x 6 seeds (`BALANCE=1 npx vitest run src/sim/balance.test.ts`):
   clock now runs in real time (the original's 5:00 ran ~3x fast with pauses); default 3-minute halves. Over 120
   matches: 5.1 goals/match, ~10 shots per side, 73% on target, 59% pass completion, no side without shots. Speed is
