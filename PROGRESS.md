@@ -41,8 +41,9 @@ palette, screen-shake and reduced-flash toggles, three difficulty levels (AI rea
 * EXP-to-level thresholds are fitted to the new-game roster data (native code, not in the script).
 * Mark Mode assignments are stored by the UI but not yet consumed by the simulation.
 * Balance pass (2026-10-20, session 2): headless batch over all 30 matchups x 6 seeds (`BALANCE=1 npx vitest run src/sim/balance.test.ts`):
-  4.0 goals/match, ~10 shots per side, 81% on target, 60% pass completion, no side without shots. Speed now
-  1.8 + 0.04*SP so slow teams stay playable; decay units 45 per pool unit; AI shoots on weight near goal.
+  clock now runs in real time (the original's 5:00 ran ~3x fast with pauses); default 3-minute halves. Over 120
+  matches: 5.1 goals/match, ~10 shots per side, 73% on target, 59% pass completion, no side without shots. Speed is
+  1.2 + 0.03*SP so slow teams stay playable; pressured CPU carriers hold 2 s before acting so tackles matter.
   New-game Aurochs still lose heavily to Psyches/Glories, as in the original data.
 
 ## Open questions (plan section 10) - working assumptions
