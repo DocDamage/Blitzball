@@ -19,3 +19,57 @@ Per plan section 4.4 the model format gets a two-session time box. Session 1 is 
 layout is documented above but no geometry has been decoded. The game proceeds with the fallback: rebuilt low-poly
 players, ball and sphere pool in Three.js, textured with original colours. Session 2 of the time box (model packs,
 `0x01B00000` relocation, VU1 packet decoding) and the portrait hunt stay on the list and do not block gameplay.
+
+## Session 2 (2026-10-20, second and final time-box session)
+
+### Where the Blitzball UI art is NOT
+
+* The four packs beside the Blitzball events (01604, 01622, 06878, 06896) are **motion packs**, not art. Corrected header:
+  `u32 0, u32 entry_count, u32 0, u32 dir_offset`; directory entries are 20 bytes `{u32 0, u16 model_id, u16 0, u16 n, u16 n, u32 table_end}`.
+  01604 = models 0001 (Tidus lo-res), 0005 (Wakka lo-res), 0065, 4029, 6004, 600E, 6067/6071 (Ronso blitzers), 60CB/60D5 (Guado
+  blitzers) with 24-26 motions each; the per-model table rows are `{u16 motion_id, u16 model_id, u16 1, u16 0x0A, u32 off, u32 off+2}`.
+  06878/06896 hold 6 models (0001, 0005, 0065, 4029, 6004, 600E) for the Luca scouting scenes.
+* The menu events bltz0005/0006 and the match event bltz0000 draw **everything** through `Common.setSplashSprite(0x011B)`
+  (55,626 calls in bltz0000). The sprite argument is a 0x60-byte shared-data struct (`00000346 00010001 ... 80808080`
+  RGBA, a `(group, index)` word at +0x48, e.g. `0d000000`/`0b000100`); bltz0000 carries 32 such templates at file 0x470180.
+  The pixel source behind those groups was not resolved this session (needs the native 0x011B handler).
+* `textureSetImageBase/ClutBase/LoadImage` (0x505A/B/0x5071) and `set2DLayerTexture` (0x801D) are never called by the Blitzball scripts.
+* `tools/extract/clutscan.py` (256-entry RGBA CLUT finder, log in `data/art/clutscan.log`) finds no CLUT in 01601/06875/06893/06731/04301
+  nor in the four packs, so any art inside them is 16/32-bit or 4-bit.
+
+### What was found (menu / system modules)
+
+* mdg table (LBA 0x158, `int16[1024]`): module -> first fid. Relevant bases: 12 -> 00485 (events), 17 -> 09021 (character packs),
+  18 -> 00406 (system sheets), 24 -> 00474, 37 -> 00434, 42 -> 00458, 48 -> 00358 (menu).
+* Menu module 00358..00405: triplets {layout, textures, empty}. `00359/00362/00365/00368/00371` are **sprite layout files**
+  (`u32 1, u32 group_count, u32 group_table_off, u32 sprite_table_off(0x24)`, sprite rects `{u16 u0,u16 u1,u16 v0,u16 v1,u16 page,u16 0xFFFF}`,
+  group table rows `{u32 off, u16 count, u16 0xFFFF}` pointing at 312-byte runtime sprite records) and 00360/363/366/369/372 their
+  format-A texture containers (already converted). 00366 is the Blitzball entry-fee/prize screen (map + "Entry Fee / Gil left").
+* System module 00406..00433 holds **headerless linear 8-bit sheets** (converted to index-grayscale PNGs by
+  `tools/extract/menu_raw.py` -> `data/art/menu_raw/`): 00422 and 00423 = 128x128 face portraits (party and aeons/extra),
+  00424 = 64x64 party portraits, 00429 = 512x416 Spira map, 00416/00417 = UI word sheets. CLUTs for these were not found
+  (00414 holds 4 CLUTs for other sheets; 00415/00421/00425 are 4-bit pixel data).
+* 00374/00375 (menu module) and 00442/00454 (module 37) are GS-layout texture dumps: 00375 = 5 CLUTs then swizzled PSMT8 data,
+  00442 = `{0, 96, 96, 0x580}` + 0x20-byte GS TEX0 descriptors at +0x60 (PSMT8 256x256 / 512x512 / 128x64 textures, TBP0 0x2F00..0x39F8,
+  CBP 0x38E8..0x39FC) + CLUT handle list at +0x680. `tools/extract/gsswizzle.py` implements the public PSMT8 and PSMCT32->PSMT8
+  layouts but neither produced a clean image on 00375 (block-scrambled output), so the dumps remain unconverted.
+* **Blitzball player portraits (60 players), team logos and stat icons were not located.** The grayscale party portraits
+  (00422/424) are the only portrait art recovered; they are not Blitzball-specific.
+
+### Character model packs (format notes, no geometry decoded)
+
+* Pack = memory image loaded at 0x01B00000; header = 16 absolute pointers (09024: +0x2FA0, +0x30B8, +0x30C0, +0x30C8, +0x31A8, +0x32A8,
+  +0x32B0, +0xCCD0, 0 x7, +0x32B8). 92 in-pack pointers and 70 pointers into the resident 0x0026xxxx region in 09024.
+* Textures inside the packs are 8-bit with 256-entry RGBA CLUTs (CSM1 order) found by clutscan.py: 09024 @0x31190/0x31590,
+  09025 @0x324B0..0x33BE0 (6 CLUTs), 09026 @0x30520.., 09027 @0x2FF80.. (6), 09028 (7), etc. The pixel data is GS-swizzled and
+  is referenced through the pointer table, so a converter needs the pointer table semantics plus a working PSMT8 de-swizzle.
+* Blitzball player models are the lo-res PC models (0001 Tidus, 0005 Wakka) and NPC blitzers 6067/6071/60CB/60D5 (ids from 01604);
+  fid = 09021 + sub-index where the model-id -> sub-index map lives in the executable (not extracted).
+
+### Verdict
+
+The 3D-model time box is **closed without a glTF**. Two sessions produced the pack layout, the motion-pack directory format,
+CLUT locations and the Blitzball model ids, but no vertex/UV decoding and no verified texture de-swizzle. The game keeps the
+Three.js fallback models. Remaining 2D leads, in order of promise: (1) the native handler of script call 0x011B
+(find the Common call table in the ELF, resolve the `(group,index)` word to a texture source), (2) a verified PSMT8 de-swizzle
+tested against 00442's TEX0 descriptors, (3) the executable-resident CLUTs for the 00422/00423/00424 portrait sheets.
