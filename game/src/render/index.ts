@@ -8,7 +8,7 @@ import { type CameraMode, CameraRig } from "./camera";
 import { OriginalCharacterSystem } from "./originalCharacters";
 import { type PoolBounds, poolCentreWorld, type RenderSnapshot, toWorld } from "./renderState";
 import { createScene, createStadium, createWebGLRenderer, type Stadium } from "./scene";
-import { addCaustics, createLightShafts, createUnderwaterUniforms, updateUnderwaterFog } from "./underwater";
+import { createLightShafts, createUnderwaterUniforms, updateUnderwaterFog } from "./underwater";
 import { Vfx } from "./vfx";
 
 export type { CameraMode } from "./camera";
@@ -39,11 +39,7 @@ export function createRenderer(container: HTMLElement, initialPool: PoolBounds =
   const rig = new CameraRig(renderer.domElement, initialPool, aspectOf(container));
   const underwater = createUnderwaterUniforms();
   const characters = new OriginalCharacterSystem(underwater);
-  const ball = new BallView();
-  ball.group.traverse((o) => {
-    const m = o as THREE.Mesh;
-    if (m.isMesh && !Array.isArray(m.material)) addCaustics(m.material, underwater);
-  });
+  const ball = new BallView(underwater);
   const vfx = new Vfx(initialPool);
   scene.add(characters.group, ball.group, vfx.group);
 

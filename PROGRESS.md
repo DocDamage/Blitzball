@@ -43,7 +43,12 @@ palette, screen-shake and reduced-flash toggles, three difficulty levels (AI rea
   Session 4: the original Luca stadium map is decoded and placed around a sphere-shaped play volume ~2.3x the old
   pool (FIELD_SCALE / SPEED_SCALE in sim/constants.ts), the broadcast camera swims with the play, carried balls sit
   in the carrier's hand, and bent team models now use Tidus's motions retargeted by joint position.
-  Still open: free agents' own models, the original blitzball model, portraits/logos (2D leads in models.md).
+  Session 5: the match ball is now the original blitzball model (Wakka's starting ball, type4 mdl0025, loaded from
+  /ffx/models/type4/mdl0025/ with the procedural sphere as fallback). Free agents (modelIndex 34..54) have no BLZ_*
+  model in the disc's model list, so they keep their team's uniform models. Still open: portraits/logos (2D leads in
+  models.md).
+* Sound: the real sample banks are decoded (tools/docs/sound.md, 3,147 SPU-ADPCM samples) but the IOP sequencer
+  language and the Blitzball sfx id -> sample mapping are not, so the game still uses procedural audio.
 * EXP-to-level thresholds are fitted to the new-game roster data (native code, not in the script).
 * Mark Mode: DONE - `TeamDef.marks` / `Match.setMarks` override the formation preset's marking (sim/match.ts `markTarget`).
 * Underwater lighting (caustics, sun shafts, fog shift, bloom) is in `render/underwater.ts`.

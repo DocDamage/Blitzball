@@ -1,8 +1,11 @@
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { type BallState, toWorld } from "./renderState";
+import { addCaustics, type UnderwaterUniforms } from "./underwater";
 
 export const BALL_RADIUS = 0.65;
 const TRAIL_POINTS = 28;
+const ORIGINAL_BALL_URL = "/ffx/models/type4/mdl0025/model.gltf";
 
 function makeBallTexture(): THREE.CanvasTexture {
   const w = 512;
@@ -100,11 +103,14 @@ export class BallView {
   private wasCarried = true;
   private readonly disposables: { dispose(): void }[] = [];
 
-  constructor() {
+  private disposed = false;
+
+  constructor(private readonly underwater?: UnderwaterUniforms) {
     const geo = new THREE.SphereGeometry(BALL_RADIUS, 24, 18);
     const tex = makeBallTexture();
     const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.45, metalness: 0.05 });
     this.disposables.push(geo, tex, mat);
+    if (underwater) addCaustics(mat, underwater);
     this.mesh = new THREE.Mesh(geo, mat);
     this.group.add(this.mesh);
 
@@ -144,6 +150,43 @@ export class BallView {
     this.trail.frustumCulled = false;
     this.trail.visible = false;
     this.group.add(this.trail);
+    this.loadOriginalModel();
+  }
+
+  /**
+   * Swap the procedural sphere for the game's own blitzball (Wakka's starting ball, type4 model 25 extracted from
+   * the disc) when the extracted asset is present; the sphere stays as the fallback.
+   */
+  private loadOriginalModel(): void {
+    new GLTFLoader().load(
+      `${ORIGINAL_BALL_URL}`,
+      (gltf) => {
+        if (this.disposed) return;
+        const model = gltf.scene;
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3());
+        const centre = box.getCenter(new THREE.Vector3());
+        const k = (2 * BALL_RADIUS) / Math.max(size.x, size.y, size.z, 1e-6);
+        const holder = new THREE.Group();
+        model.position.sub(centre);
+        holder.scale.setScalar(k);
+        holder.add(model);
+        model.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (!m.isMesh) return;
+          this.disposables.push(m.geometry);
+          const mats = Array.isArray(m.material) ? m.material : [m.material];
+          for (const mat of mats) {
+            this.disposables.push(mat);
+            if (this.underwater) addCaustics(mat, this.underwater);
+          }
+        });
+        (this.mesh.material as THREE.Material).visible = false;
+        this.mesh.add(holder);
+      },
+      undefined,
+      () => undefined, // asset absent: keep the procedural ball
+    );
   }
 
   /** `held`: where the carrier's hand is, when the character renderer knows it. */
@@ -193,6 +236,7 @@ export class BallView {
   }
 
   dispose(): void {
+    this.disposed = true;
     for (const d of this.disposables) d.dispose();
     this.group.removeFromParent();
   }
