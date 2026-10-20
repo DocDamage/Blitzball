@@ -151,3 +151,11 @@ portraits there. Formation/League screens were not reached (input stopped respon
 Method that works for any screen: PCSX2 F1 save state -> `sstates/*.p2s` (zstd zip; `pip install zipfile-zstd`) ->
 `GS.bin` is a 509-byte header + 4 MiB VRAM at offset **425** (found from the zero-run alignment) -> decode with
 `tools/extract/gsmem.py` (`addr32` etc.). The HW renderer leaves the framebuffer area empty but textures are intact.
+
+### Party portraits found (user-recorded captures, Sphere Grid screen)
+The Sphere Grid shows colour portraits. The 00422 index sheet (91x96 faces, 4x2) is uploaded as PSMT8 at VRAM bp 14848 (bw 8; matched
+page-by-page against the file), with **one shared CLUT at CBP 11984** (picked by rendering every plausible CLUT and comparing with the
+screenshot; neighbouring CBPs are battle/variant palettes). `tools/extract/party_portraits.py <capture dir>` cuts
+tidus/yuna/auron/kimahri/wakka/lulu/rikku/extra to `game/public/ffx/portraits/`. Tidus and Wakka are Blitzball players, so
+`render/portraits.ts` uses these for modelIndex 0/1; every other blitzer still uses a model render. 00423 (aeons) and 00424 should
+decode the same way from a capture that shows them.

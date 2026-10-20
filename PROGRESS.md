@@ -47,7 +47,7 @@ palette, screen-shake and reduced-flash toggles, three difficulty levels (AI rea
   /ffx/models/type4/mdl0025/ with the procedural sphere as fallback). Free agents (modelIndex 34..54) have no BLZ_*
   model in the disc's model list, so they keep their team's uniform models. Portraits: the disc's 2D Blitzball portrait art and team logos were not found after three sessions
   (tools/docs/models.md), so player cards show head-and-shoulders renders of each player's original model
-  (render/portraits.ts, game/portraits.html); free agents and two bent-pose Guado models get none. Team logos: none.
+  (render/portraits.ts, game/portraits.html); free agents and two bent-pose Guado models get none. Team logos: none. Tidus and Wakka use the game's own colour party portraits (tools/extract/party_portraits.py, from a PCSX2 capture).
 * Sound: DONE (session 5). The IOP sequencer opcodes, sound banks and Blitzball sfx ids are decoded; `tools/extract/export_audio.py`
   renders the original sound effects and music (Blitz Off!, The Blitzers, ...) into game/public/ffx/audio and the engine plays
   them (audio/samples.ts), keeping the procedural cues for sounds the original has no counterpart for and as the fallback.

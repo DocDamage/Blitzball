@@ -10,6 +10,9 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 const BASE = "/ffx/blitz/";
 
+/** Tidus and Wakka have the game's own colour portraits (cut from the Sphere Grid art by tools/extract/party_portraits.py). */
+const ORIGINAL_ART: Record<number, string> = { 0: "/ffx/portraits/tidus.png", 1: "/ffx/portraits/wakka.png" };
+
 /** Models baked in a bent-over bind pose (two of the Guado blitzers): the head cannot be framed, so no portrait. */
 const BENT_MODELS = new Set([25, 26]);
 
@@ -51,6 +54,15 @@ export async function portraitFor(playerId: number, opts: PortraitOptions = {}):
   const idx = await portraitModelOf(playerId);
   if (idx === null) return null;
   let p = cache.get(idx);
+  if (!p && ORIGINAL_ART[idx]) {
+    const url = ORIGINAL_ART[idx];
+    p = fetch(url, { method: "HEAD" })
+      .then((r) => (r.ok ? url : null))
+      .catch(() => null)
+      .then((u) => u ?? portraitFromModel(idx, opts));
+    cache.set(idx, p);
+    return p;
+  }
   if (!p) {
     p = new Promise<string | null>((resolve) => {
       queue = queue.then(() => renderModel(idx, opts).then(resolve, () => resolve(null)));
@@ -58,6 +70,12 @@ export async function portraitFor(playerId: number, opts: PortraitOptions = {}):
     cache.set(idx, p);
   }
   return p;
+}
+
+function portraitFromModel(idx: number, opts: PortraitOptions): Promise<string | null> {
+  return new Promise<string | null>((resolve) => {
+    queue = queue.then(() => renderModel(idx, opts).then(resolve, () => resolve(null)));
+  });
 }
 
 async function renderModel(modelIndex: number, opts: PortraitOptions): Promise<string | null> {
