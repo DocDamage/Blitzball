@@ -64,7 +64,6 @@ import {
   SPRINT_MULT,
   TACKLE_COOLDOWN_SECONDS,
   TACKLE_HP_COST,
-  TACKLE_KNOCK_SPEED,
   TACKLE_RANGE,
   TACKLE_WHIFF_STUN_SECONDS,
   TACKLED_STUN_SECONDS,
@@ -82,6 +81,7 @@ import {
   type BallFlight,
   type FormationId,
   type MatchEvent,
+  type MatchEventPayload,
   type MatchState,
   type PlayerState,
   ROLE_ORDER,
@@ -342,7 +342,7 @@ export class Match {
 
   // ------------------------------------------------------------------ events
 
-  private emit(e: Omit<MatchEvent, "tick" | "time" | "half">): void {
+  private emit(e: MatchEventPayload): void {
     const s = this.state;
     this.events.push({ ...e, tick: s.tick, time: s.time, half: s.half } as MatchEvent);
   }
@@ -890,7 +890,7 @@ export class Match {
   }
 
   private outOfBounds(keeper: PlayerState): void {
-    keeper.pos = add(this.ownGoalCenter(keeper.team), v3(-this.attackDir(keeper.team) * -1.5, 0, 0));
+    keeper.pos = add(this.ownGoalCenter(keeper.team), v3(this.attackDir(keeper.team) * 1.5, 0, 0));
     this.takeBall(keeper);
     this.emit({ kind: "out-of-bounds-reset", toTeam: keeper.team, toPlayer: keeper.id });
   }
@@ -929,9 +929,5 @@ export class Match {
 
   get tackleRange(): number {
     return TACKLE_RANGE;
-  }
-
-  get tackleKnockSpeed(): number {
-    return TACKLE_KNOCK_SPEED;
   }
 }

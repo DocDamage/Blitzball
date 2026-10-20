@@ -1,0 +1,45 @@
+{
+ "teams": [
+  {
+   "id": 0,
+   "name": "Luca Goers"
+  },
+  {
+   "id": 1,
+   "name": "Kilika Beasts"
+  },
+  {
+   "id": 2,
+   "name": "Al Bhed Psyches"
+  },
+  {
+   "id": 3,
+   "name": "Ronso Fangs"
+  },
+  {
+   "id": 4,
+   "name": "Guado Glories"
+  },
+  {
+   "id": 5,
+   "name": "Besaid Aurochs"
+  }
+ ],
+ "formations": [
+  "Normal",
+  "Counter",
+  "Center Attack",
+  "Right Side",
+  "Left Side",
+  "Flat Line",
+  "Double Sides",
+  "All-Out Defense",
+  "Mark Mode"
+ ],
+ "prizes": [
+  "Tech Find",
+  "Attack Reels",
+  "Status Reels",
+  "Aurochs Reels"
+ ]
+}

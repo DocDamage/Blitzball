@@ -196,3 +196,7 @@ export type MatchEvent = EventBase &
   );
 
 export type MatchEventKind = MatchEvent["kind"];
+
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+/** An event without its timing fields (what Match.emit fills in). */
+export type MatchEventPayload = DistributiveOmit<MatchEvent, "tick" | "time" | "half">;

@@ -1,0 +1,606 @@
+[
+ {
+  "id": 0,
+  "name": "(none)"
+ },
+ {
+  "id": 1,
+  "name": "Jecht Shot",
+  "kind": "shot",
+  "hpCost": 120,
+  "statBoost": 5,
+  "power": 70,
+  "flags": 0,
+  "description": "HP Cost:   SH +\nKnocks away up to two\nopposing players."
+ },
+ {
+  "id": 2,
+  "name": "Jecht Shot 2",
+  "kind": "shot",
+  "hpCost": 999,
+  "statBoost": 10,
+  "power": 100,
+  "flags": 0,
+  "description": "HP Cost:   SH +\nInvisible shot. Knocks away\nthree opposing players."
+ },
+ {
+  "id": 3,
+  "name": "Sphere Shot",
+  "kind": "shot",
+  "hpCost": 90,
+  "statBoost": 3,
+  "power": 0,
+  "flags": 0,
+  "description": "HP Cost:   SH +\nAdds random amount to SH.\nPress X to select."
+ },
+ {
+  "id": 4,
+  "name": "Invisible Shot",
+  "kind": "shot",
+  "hpCost": 220,
+  "statBoost": 3,
+  "power": 60,
+  "flags": 0,
+  "description": "HP Cost:   SH +\nControl direction with left\nstick. % chance."
+ },
+ {
+  "id": 5,
+  "name": "Venom Shot",
+  "kind": "shot",
+  "hpCost": 20,
+  "statBoost": 3,
+  "power": 40,
+  "flags": 0,
+  "description": "HP Cost:   SH +\nPoisons goalkeeper.\n% chance."
+ },
+ {
+  "id": 6,
+  "name": "Venom Shot 2",
+  "kind": "shot",
+  "hpCost": 35,
+  "statBoost": 5,
+  "power": 70,
+  "flags": 0,
+  "description": "HP Cost:   SH +\nPoisons goalkeeper.\n% chance."
+ },
+ {
+  "id": 7,
+  "name": "Venom Shot 3",
+  "kind": "shot",
+  "hpCost": 100,
+  "statBoost": 7,
+  "power": 100,
+  "flags": 0,
+  "description": "HP Cost:   SH +\nPoisons goalkeeper.\n% chance."
+ },
+ {
+  "id": 8,
+  "name": "Nap Shot",
+  "kind": "shot",
+  "hpCost": 45,
+  "statBoost": 3,
+  "power": 40,
+  "flags": 0,
+  "description": "HP Cost:   SH +\nPuts goalkeeper to sleep.\n% chance."
+ },
+ {
+  "id": 9,
+  "name": "Nap Shot 2",
+  "kind": "shot",
+  "hpCost": 80,
+  "statBoost": 5,
+  "power": 70,
+  "flags": 0,
+  "description": "HP Cost:   SH +\nPuts goalkeeper to sleep.\n% chance."
+ },
+ {
+  "id": 10,
+  "name": "Nap Shot 3",
+  "kind": "shot",
+  "hpCost": 350,
+  "statBoost": 7,
+  "power": 100,
+  "flags": 0,
+  "description": "HP Cost:   SH +\nPuts goalkeeper to sleep.\n% chance."
+ },
+ {
+  "id": 11,
+  "name": "Wither Shot",
+  "kind": "shot",
+  "hpCost": 30,
+  "statBoost": 3,
+  "power": 40,
+  "flags": 0,
+  "description": "HP Cost:   SH +\nLowers goalie's BL and CA.\n% chance."
+ },
+ {
+  "id": 12,
+  "name": "Wither Shot 2",
+  "kind": "shot",
+  "hpCost": 180,
+  "statBoost": 5,
+  "power": 70,
+  "flags": 0,
+  "description": "HP Cost:   SH +\nLowers goalie's BL and CA.\n% chance."
+ },
+ {
+  "id": 13,
+  "name": "Wither Shot 3",
+  "kind": "shot",
+  "hpCost": 390,
+  "statBoost": 7,
+  "power": 100,
+  "flags": 0,
+  "description": "HP Cost:   SH +\nLowers goalie's BL and CA.\n% chance."
+ },
+ {
+  "id": 14,
+  "name": "Venom Pass",
+  "kind": "pass",
+  "hpCost": 40,
+  "statBoost": 3,
+  "power": 30,
+  "flags": 0,
+  "description": "HP Cost:   PA +\nPoisons opponents.\n% chance."
+ },
+ {
+  "id": 15,
+  "name": "Venom Pass 2",
+  "kind": "pass",
+  "hpCost": 120,
+  "statBoost": 5,
+  "power": 60,
+  "flags": 0,
+  "description": "HP Cost:   PA +\nPoisons opponents.\n% chance."
+ },
+ {
+  "id": 16,
+  "name": "Venom Pass 3",
+  "kind": "pass",
+  "hpCost": 350,
+  "statBoost": 7,
+  "power": 100,
+  "flags": 0,
+  "description": "HP Cost:   PA +\nPoisons opponents.\n% chance."
+ },
+ {
+  "id": 17,
+  "name": "Nap Pass",
+  "kind": "pass",
+  "hpCost": 40,
+  "statBoost": 3,
+  "power": 30,
+  "flags": 0,
+  "description": "HP Cost:   PA +\nPuts opponents to sleep.\n% chance."
+ },
+ {
+  "id": 18,
+  "name": "Nap Pass 2",
+  "kind": "pass",
+  "hpCost": 200,
+  "statBoost": 5,
+  "power": 60,
+  "flags": 0,
+  "description": "HP Cost:   PA +\nPuts opponents to sleep.\n% chance."
+ },
+ {
+  "id": 19,
+  "name": "Nap Pass 3",
+  "kind": "pass",
+  "hpCost": 510,
+  "statBoost": 7,
+  "power": 100,
+  "flags": 0,
+  "description": "HP Cost:   PA +\nPuts opponents to sleep.\n% chance."
+ },
+ {
+  "id": 20,
+  "name": "Wither Pass",
+  "kind": "pass",
+  "hpCost": 40,
+  "statBoost": 3,
+  "power": 30,
+  "flags": 0,
+  "description": "HP Cost:   PA +\nLowers opponents' EN, AT,\nand BL. % chance."
+ },
+ {
+  "id": 21,
+  "name": "Wither Pass 2",
+  "kind": "pass",
+  "hpCost": 180,
+  "statBoost": 5,
+  "power": 60,
+  "flags": 0,
+  "description": "HP Cost:   PA +\nLowers opponents' EN, AT,\nand BL. % chance."
+ },
+ {
+  "id": 22,
+  "name": "Wither Pass 3",
+  "kind": "pass",
+  "hpCost": 440,
+  "statBoost": 7,
+  "power": 100,
+  "flags": 0,
+  "description": "HP Cost:   PA +\nLowers opponents' EN, AT,\nand BL. % chance."
+ },
+ {
+  "id": 23,
+  "name": "Volley Shot",
+  "kind": "shot",
+  "hpCost": 10,
+  "statBoost": 3,
+  "power": 50,
+  "flags": 512,
+  "description": "HP Cost: \nPlayer can shoot free balls\nunblocked. % chance."
+ },
+ {
+  "id": 24,
+  "name": "Volley Shot 2",
+  "kind": "shot",
+  "hpCost": 40,
+  "statBoost": 5,
+  "power": 75,
+  "flags": 512,
+  "description": "HP Cost: \nPlayer can shoot free balls\nunblocked. % chance."
+ },
+ {
+  "id": 25,
+  "name": "Volley Shot 3",
+  "kind": "shot",
+  "hpCost": 250,
+  "statBoost": 7,
+  "power": 100,
+  "flags": 512,
+  "description": "HP Cost: \nPlayer can shoot free balls\nunblocked. % chance."
+ },
+ {
+  "id": 26,
+  "name": "Venom Tackle",
+  "kind": "tackle",
+  "hpCost": 30,
+  "statBoost": 3,
+  "power": 40,
+  "flags": 0,
+  "description": "HP Cost:   AT +\nInflicts poison.\n% chance."
+ },
+ {
+  "id": 27,
+  "name": "Venom Tackle 2",
+  "kind": "tackle",
+  "hpCost": 70,
+  "statBoost": 5,
+  "power": 70,
+  "flags": 0,
+  "description": "HP Cost:   AT +\nInflicts poison.\n% chance."
+ },
+ {
+  "id": 28,
+  "name": "Venom Tackle 3",
+  "kind": "tackle",
+  "hpCost": 160,
+  "statBoost": 7,
+  "power": 100,
+  "flags": 0,
+  "description": "HP Cost:   AT +\nInflicts poison.\n% chance."
+ },
+ {
+  "id": 29,
+  "name": "Nap Tackle",
+  "kind": "tackle",
+  "hpCost": 40,
+  "statBoost": 3,
+  "power": 40,
+  "flags": 0,
+  "description": "HP Cost:   AT +\nPuts target to sleep if EN is\nreduced to 0. 100% chance."
+ },
+ {
+  "id": 30,
+  "name": "Nap Tackle 2",
+  "kind": "tackle",
+  "hpCost": 90,
+  "statBoost": 5,
+  "power": 70,
+  "flags": 0,
+  "description": "HP Cost:   AT +\nPuts target to sleep if EN is\nreduced to 0. 100% chance."
+ },
+ {
+  "id": 31,
+  "name": "Nap Tackle 3",
+  "kind": "tackle",
+  "hpCost": 180,
+  "statBoost": 7,
+  "power": 100,
+  "flags": 0,
+  "description": "HP Cost:   AT +\nPuts target to sleep if EN is\nreduced to 0. 100% chance."
+ },
+ {
+  "id": 32,
+  "name": "Wither Tackle",
+  "kind": "tackle",
+  "hpCost": 8,
+  "statBoost": 3,
+  "power": 40,
+  "flags": 0,
+  "description": "HP Cost:   AT +\nLowers target's EN, PA,\nand SH. % chance."
+ },
+ {
+  "id": 33,
+  "name": "Wither Tackle 2",
+  "kind": "tackle",
+  "hpCost": 80,
+  "statBoost": 5,
+  "power": 70,
+  "flags": 0,
+  "description": "HP Cost:   AT +\nLowers target's EN, PA,\nand SH. % chance."
+ },
+ {
+  "id": 34,
+  "name": "Wither Tackle 3",
+  "kind": "tackle",
+  "hpCost": 250,
+  "statBoost": 7,
+  "power": 100,
+  "flags": 0,
+  "description": "HP Cost:   AT +\nLowers target's EN, PA,\nand SH. % chance."
+ },
+ {
+  "id": 35,
+  "name": "Drain Tackle",
+  "kind": "tackle",
+  "hpCost": 30,
+  "statBoost": 0,
+  "power": 40,
+  "flags": 0,
+  "description": "HP Absorbed:   AT +\nAbsorb HP. Own HP must be\nover . % chance."
+ },
+ {
+  "id": 36,
+  "name": "Drain Tackle 2",
+  "kind": "tackle",
+  "hpCost": 150,
+  "statBoost": 0,
+  "power": 70,
+  "flags": 0,
+  "description": "HP Absorbed:   AT +\nAbsorb HP. Own HP must be\nover . % chance."
+ },
+ {
+  "id": 37,
+  "name": "Drain Tackle 3",
+  "kind": "tackle",
+  "hpCost": 500,
+  "statBoost": 0,
+  "power": 100,
+  "flags": 0,
+  "description": "HP Absorbed:   AT +\nAbsorb HP. Own HP must be\nover . % chance."
+ },
+ {
+  "id": 38,
+  "name": "Tackle Slip",
+  "kind": "evade",
+  "hpCost": 40,
+  "statBoost": 0,
+  "power": 40,
+  "flags": 128,
+  "description": "HP Cost:  % chance\nEvade tackles. Player may be\ndisoriented after evading."
+ },
+ {
+  "id": 39,
+  "name": "Tackle Slip 2",
+  "kind": "evade",
+  "hpCost": 170,
+  "statBoost": 0,
+  "power": 80,
+  "flags": 128,
+  "description": "HP Cost:  % chance\nEvade tackles. Player may be\ndisoriented after evading."
+ },
+ {
+  "id": 40,
+  "name": "Anti-Venom",
+  "kind": "guard",
+  "hpCost": 5,
+  "statBoost": 0,
+  "power": 50,
+  "flags": 2,
+  "description": "HP Cost:  % chance\nBlocks poison."
+ },
+ {
+  "id": 41,
+  "name": "Anti-Venom 2",
+  "kind": "guard",
+  "hpCost": 50,
+  "statBoost": 0,
+  "power": 100,
+  "flags": 2,
+  "description": "HP Cost:  % chance\nBlocks poison."
+ },
+ {
+  "id": 42,
+  "name": "Anti-Nap",
+  "kind": "guard",
+  "hpCost": 40,
+  "statBoost": 0,
+  "power": 50,
+  "flags": 4,
+  "description": "HP Cost:  % chance\nBlocks sleep."
+ },
+ {
+  "id": 43,
+  "name": "Anti-Nap 2",
+  "kind": "guard",
+  "hpCost": 210,
+  "statBoost": 0,
+  "power": 100,
+  "flags": 4,
+  "description": "HP Cost:  % chance\nBlocks sleep."
+ },
+ {
+  "id": 44,
+  "name": "Anti-Wither",
+  "kind": "guard",
+  "hpCost": 30,
+  "statBoost": 0,
+  "power": 50,
+  "flags": 8,
+  "description": "HP Cost:  % chance\nPrevents stat reduction."
+ },
+ {
+  "id": 45,
+  "name": "Anti-Wither 2",
+  "kind": "guard",
+  "hpCost": 200,
+  "statBoost": 0,
+  "power": 100,
+  "flags": 8,
+  "description": "HP Cost:  % chance\nPrevents stat reduction."
+ },
+ {
+  "id": 46,
+  "name": "Anti-Drain",
+  "kind": "guard",
+  "hpCost": 10,
+  "statBoost": 0,
+  "power": 50,
+  "flags": 16,
+  "description": "HP Cost:  % chance\nPrevents HP drain."
+ },
+ {
+  "id": 47,
+  "name": "Anti-Drain 2",
+  "kind": "guard",
+  "hpCost": 50,
+  "statBoost": 0,
+  "power": 100,
+  "flags": 16,
+  "description": "HP Cost:  % chance\nPrevents HP drain."
+ },
+ {
+  "id": 48,
+  "name": "Spin Ball",
+  "kind": "passive",
+  "hpCost": 30,
+  "statBoost": 0,
+  "power": 3,
+  "flags": 0,
+  "description": "HP Cost: \nPuts spin on the ball. Harder\nfor goalkeeper to control."
+ },
+ {
+  "id": 49,
+  "name": "Grip Gloves",
+  "kind": "passive",
+  "hpCost": 30,
+  "statBoost": 0,
+  "power": 3,
+  "flags": 8192,
+  "description": "HP Cost: \nRaises goalkeeper's ball\ncontrol ability."
+ },
+ {
+  "id": 50,
+  "name": "Elite Defense",
+  "kind": "passive",
+  "hpCost": 5,
+  "statBoost": 0,
+  "power": 0,
+  "flags": 1024,
+  "description": "Equip HP Cost: \nFind and intercept the ball\ncarrier from farther away."
+ },
+ {
+  "id": 51,
+  "name": "Brawler",
+  "kind": "passive",
+  "hpCost": 10,
+  "statBoost": 0,
+  "power": 60,
+  "flags": 2048,
+  "description": "HP Cost:  % chance\nParticipate in encounters\nfrom farther away."
+ },
+ {
+  "id": 52,
+  "name": "Pile Venom",
+  "kind": "passive",
+  "hpCost": 30,
+  "statBoost": 0,
+  "power": 50,
+  "flags": 0,
+  "description": "Equip HP Cost: \nCumulate poison effects."
+ },
+ {
+  "id": 53,
+  "name": "Pile Wither",
+  "kind": "passive",
+  "hpCost": 70,
+  "statBoost": 0,
+  "power": 50,
+  "flags": 0,
+  "description": "Equip HP Cost: \nCumulate the effects of\nstat-lowering techniques."
+ },
+ {
+  "id": 54,
+  "name": "Regen",
+  "kind": "passive",
+  "hpCost": 50,
+  "statBoost": 5,
+  "power": 100,
+  "flags": 0,
+  "description": "Equip HP Cost: \nSpeeds up HP recovery when\nnot carrying the ball."
+ },
+ {
+  "id": 55,
+  "name": "Good Morning!",
+  "kind": "passive",
+  "hpCost": 180,
+  "statBoost": 0,
+  "power": 50,
+  "flags": 4096,
+  "description": "HP Cost:  % chance\nPowers up player after\nwaking from sleep."
+ },
+ {
+  "id": 56,
+  "name": "Hi-Risk",
+  "kind": "passive",
+  "hpCost": 300,
+  "statBoost": 0,
+  "power": 100,
+  "flags": 0,
+  "description": "Equip HP Cost: \nLowers all stats to 1/2, but\ndoubles experience points."
+ },
+ {
+  "id": 57,
+  "name": "Golden Arm",
+  "kind": "passive",
+  "hpCost": 30,
+  "statBoost": 0,
+  "power": 20,
+  "flags": 0,
+  "description": "Equip HP Cost:   AT +\nSlows SH and PA loss\nduring passes and shots."
+ },
+ {
+  "id": 58,
+  "name": "Gamble",
+  "kind": "passive",
+  "hpCost": 300,
+  "statBoost": 0,
+  "power": 50,
+  "flags": 0,
+  "description": "HP Cost:  % chance\nStats randomized after\nwaking. Press X to select."
+ },
+ {
+  "id": 59,
+  "name": "Super Goalie",
+  "kind": "passive",
+  "hpCost": 30,
+  "statBoost": 0,
+  "power": 60,
+  "flags": 0,
+  "description": "HP Cost: + % chance\nAdds random amount to CA.\nPress X to select."
+ },
+ {
+  "id": 60,
+  "name": "Aurochs Spirit",
+  "kind": "passive",
+  "hpCost": 600,
+  "statBoost": 10,
+  "power": 50,
+  "flags": 0,
+  "description": "HP Cost:   SH +\nSum of original d's SH\non team added to 's!"
+ }
+]
