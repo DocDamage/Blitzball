@@ -140,3 +140,14 @@ for the JP SLPS build, so addresses were found by signature instead):
 * More data ruled out: 00434 = animated water caustic frames, 00454 = a second Sphere Grid dump (same layout as 00442),
   00479 = packed/compressed. `tools/extract/r5900dis.py` disassembles pointer-table targets.
 Next idea: breakpoint-free approach via PCSX2 (`tools/pcsx2`): load a Blitzball save state and dump GS VRAM when the team menu is up.
+
+### PCSX2 pass (same session): the Blitzball menus have no player portraits
+With saves from GameFAQs (CodeBreaker .cbs / PS3 .PSV, converted with `mymcplus` into a PCSX2 card) the game was driven in PCSX2
+(`C:\pcsx2`, keyboard bindings: arrows/WASD = d-pad/stick, K = Cross, L = Circle, I = Triangle, Enter = Start; hold keys ~0.25 s,
+Tab toggles turbo). The "Luca - Blitz End" save is mid-story (no Blitzball yet); the late-game "Tower of the Dead" save has a
+save sphere whose menu offers League / Tournament / Exhibition / Tutorial / Team Data. **Team Data -> player page is text only**
+(name, level, team, contract, salary, stats, technique list; no portrait or logo), so the original probably has no 2D player
+portraits there. Formation/League screens were not reached (input stopped responding after a state save).
+Method that works for any screen: PCSX2 F1 save state -> `sstates/*.p2s` (zstd zip; `pip install zipfile-zstd`) ->
+`GS.bin` is a 509-byte header + 4 MiB VRAM at offset **425** (found from the zero-run alignment) -> decode with
+`tools/extract/gsmem.py` (`addr32` etc.). The HW renderer leaves the framebuffer area empty but textures are intact.
