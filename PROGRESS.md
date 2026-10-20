@@ -47,8 +47,10 @@ palette, screen-shake and reduced-flash toggles, three difficulty levels (AI rea
   /ffx/models/type4/mdl0025/ with the procedural sphere as fallback). Free agents (modelIndex 34..54) have no BLZ_*
   model in the disc's model list, so they keep their team's uniform models. Still open: portraits/logos (2D leads in
   models.md).
-* Sound: the real sample banks are decoded (tools/docs/sound.md, 3,147 SPU-ADPCM samples) but the IOP sequencer
-  language and the Blitzball sfx id -> sample mapping are not, so the game still uses procedural audio.
+* Sound: DONE (session 5). The IOP sequencer opcodes, sound banks and Blitzball sfx ids are decoded; `tools/extract/export_audio.py`
+  renders the original sound effects and music (Blitz Off!, The Blitzers, ...) into game/public/ffx/audio and the engine plays
+  them (audio/samples.ts), keeping the procedural cues for sounds the original has no counterpart for and as the fallback.
+  See tools/docs/sound.md. Not rendered: SPU reverb, other music tracks, other SEP packs.
 * EXP-to-level thresholds are fitted to the new-game roster data (native code, not in the script).
 * Mark Mode: DONE - `TeamDef.marks` / `Match.setMarks` override the formation preset's marking (sim/match.ts `markTarget`).
 * Underwater lighting (caustics, sun shafts, fog shift, bloom) is in `render/underwater.ts`.

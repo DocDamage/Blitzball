@@ -174,6 +174,7 @@ class MatchRuntime implements MatchHandle {
     this.audio = createAudio(options.settings.audio ?? DEFAULT_AUDIO_SETTINGS);
     this.audio.resume();
     this.audio.setAmbience(true);
+    this.audio.startMusic("match");
 
     this.lastNow = performance.now();
     this.raf = requestAnimationFrame(this.frame);

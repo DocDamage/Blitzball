@@ -72,6 +72,7 @@ export class App {
   lastPrizes: PrizeEvent[] = [];
   /** Set by the match / demo screens while they own the input. */
   inputLocked = false;
+  private wasFullscreen = false;
   /** Called when the active screen is torn down (screens register cleanup). */
   private cleanup: (() => void) | null = null;
   private detachFocus: (() => void) | null = null;
@@ -279,6 +280,12 @@ export class App {
     this.shell.classList.toggle("hidden", fullscreen);
     this.matchHost.classList.toggle("hidden", !fullscreen);
     this.inputLocked = fullscreen;
+    if (fullscreen !== this.wasFullscreen) {
+      // the match runtime plays its own music; menus get theirs back afterwards
+      if (fullscreen) this.audio.stopMusic();
+      else this.audio.startMusic("menu");
+      this.wasFullscreen = fullscreen;
+    }
 
     this.renderTopbar(id);
     empty(this.screenHost);

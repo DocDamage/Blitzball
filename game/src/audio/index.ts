@@ -1,19 +1,26 @@
 /**
- * audio/index.ts - Procedural audio layer (Web Audio API, no sound files).
+ * audio/index.ts - Audio layer (Web Audio API).
  *
  *   createAudio(settings) -> BlitzAudio
  *
- * Every cue is synthesised on demand from oscillators and a shared noise
- * buffer: crowd / underwater ambience beds, whistles, impacts, technique
- * stings, a goal fanfare, UI blips and an optional looping pad + arpeggio
- * track. A user-supplied music file (object URL, never persisted) replaces
- * the procedural track while set.
+ * The game's own sounds and music (rendered from the disc by
+ * tools/extract/export_audio.py, see samples.ts) play when the extracted
+ * assets are present. Everything else, and everything when they are absent,
+ * is synthesised on demand from oscillators and a shared noise buffer: crowd /
+ * underwater ambience beds, whistles, impacts, technique stings, a goal
+ * fanfare, UI blips and an optional looping pad + arpeggio track. A
+ * user-supplied music file (object URL, never persisted) replaces the music
+ * while set.
  *
  * Resilience: when `AudioContext` is missing (tests, old browsers) every
  * method is a silent no-op. The context is created lazily and resumed on the
  * first user gesture (autoplay policy); cues played before that are dropped,
  * ambience / music requested before that start as soon as the context runs.
  */
+
+import { MUSIC_PIECE, type MusicFile, type MusicTrack, recipeFor, SampleBank } from "./samples";
+
+export type { MusicTrack } from "./samples";
 
 export interface AudioSettings {
   /** 0..1 */
@@ -62,7 +69,8 @@ export interface BlitzAudio {
   setVolumes(v: Partial<AudioSettings>): void;
   /** Crowd + underwater beds (match screens). */
   setAmbience(on: boolean): void;
-  startMusic(): void;
+  /** Start music: the original piece for the track when available, else the procedural pad (default "menu"). */
+  startMusic(track?: MusicTrack): void;
   stopMusic(): void;
   /** Replace the procedural track with the user's own file (null = back to procedural). */
   setUserMusic(file: File | null): void;
@@ -136,6 +144,12 @@ class Engine implements BlitzAudio {
   private ambienceNodes: AudioScheduledSourceNode[] = [];
   private ambienceGain: GainNode | null = null;
 
+  private readonly samples = new SampleBank();
+  private musicTrack: MusicTrack = "menu";
+  private musicToken = 0;
+  private musicSource: AudioBufferSourceNode | null = null;
+  private musicSourceGain: GainNode | null = null;
+  private musicPlaying: MusicTrack | null = null;
   private musicWanted = false;
   private musicTimer: ReturnType<typeof setInterval> | null = null;
   private nextBar = 0;
@@ -174,6 +188,9 @@ class Engine implements BlitzAudio {
       this.music.connect(this.master);
       this.master.connect(this.ctx.destination);
       this.applyVolumes();
+      void this.samples.load().then(() => {
+        if (this.ctx && !this.disposed) this.samples.preloadSfx(this.ctx);
+      });
     }
     if (this.ctx.state !== "running") {
       void this.ctx.resume().then(
@@ -187,7 +204,7 @@ class Engine implements BlitzAudio {
     if (this.disposed || !this.ctx || this.ctx.state !== "running") return;
     this.detachGestures();
     if (this.ambienceWanted && this.ambienceNodes.length === 0) this.startAmbience();
-    if (this.musicWanted && !this.musicTimer && !this.userEl) this.startProcedural();
+    if (this.musicWanted && !this.userEl) this.beginMusic();
     if (this.userEl && this.musicWanted) void this.userEl.play().catch(() => {});
   }
 
@@ -320,6 +337,8 @@ class Engine implements BlitzAudio {
   play(name: CueName, opts: PlayOptions = {}): void {
     if (!this.live()) return;
     const k = clamp01(opts.intensity ?? 1);
+    const recipe = recipeFor(name, opts.family);
+    if (recipe && this.playLayers(recipe.layers, k) && !recipe.procedural) return;
     switch (name) {
       case "kickoff":
         this.whistle(0.35, 1);
@@ -391,6 +410,25 @@ class Engine implements BlitzAudio {
         this.tone({ type: "triangle", freq: 440, dur: 0.14, gain: 0.13 * k, at: 0.07 });
         break;
     }
+  }
+
+  /** Play the recorded layers of a cue; false when none of their buffers is decoded yet (caller falls back). */
+  private playLayers(layers: { cue: string; gain: number }[], k: number): boolean {
+    const ctx = this.live();
+    if (!ctx || !this.samples.ready) return false;
+    let played = false;
+    for (const layer of layers) {
+      const buf = this.samples.variant(ctx, layer.cue);
+      if (!buf) continue;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const g = ctx.createGain();
+      g.gain.value = layer.gain * (0.3 + 0.7 * k);
+      src.connect(g).connect(this.sfx);
+      src.start();
+      played = true;
+    }
+    return played;
   }
 
   private whistle(dur: number, blasts: number): void {
@@ -492,20 +530,87 @@ class Engine implements BlitzAudio {
 
   // ------------------------------------------------------------------ music
 
-  startMusic(): void {
+  startMusic(track?: MusicTrack): void {
+    if (track) {
+      if (track !== this.musicTrack && this.musicPlaying) this.stopSampleMusic();
+      this.musicTrack = track;
+    }
     this.musicWanted = true;
     if (!this.live()) return;
     if (this.userEl) void this.userEl.play().catch(() => {});
-    else if (!this.musicTimer) this.startProcedural();
+    else this.beginMusic();
   }
 
   stopMusic(): void {
     this.musicWanted = false;
+    this.musicToken++;
     if (this.musicTimer) {
       clearInterval(this.musicTimer);
       this.musicTimer = null;
     }
+    this.stopSampleMusic();
     this.userEl?.pause();
+  }
+
+  /** Start the current track: the original piece when the extracted assets exist, else the procedural pad. */
+  private beginMusic(): void {
+    if (!this.live() || this.userEl || !this.musicWanted) return;
+    if (this.musicPlaying === this.musicTrack || this.musicTimer) return;
+    const track = this.musicTrack;
+    const token = ++this.musicToken;
+    void this.samples.load().then(() => {
+      const ctx = this.live();
+      if (!ctx || token !== this.musicToken || !this.musicWanted || this.userEl) return;
+      const file = this.samples.musicFile(MUSIC_PIECE[track]);
+      if (!file) {
+        if (!this.musicTimer) this.startProcedural();
+        return;
+      }
+      void this.samples.decode(ctx, file.file).then((buf) => {
+        if (token !== this.musicToken || !this.musicWanted || this.userEl) return;
+        if (buf) this.playMusicBuffer(buf, file, track);
+        else if (!this.musicTimer) this.startProcedural();
+      });
+    });
+  }
+
+  private playMusicBuffer(buf: AudioBuffer, file: MusicFile, track: MusicTrack): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    this.stopSampleMusic();
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    if (file.loopStart !== null && file.loopEnd !== null) {
+      src.loop = true;
+      src.loopStart = file.loopStart;
+      src.loopEnd = Math.min(file.loopEnd, buf.duration);
+    }
+    const g = ctx.createGain();
+    const t = ctx.currentTime;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(1, t + 0.6);
+    src.connect(g).connect(this.music);
+    src.start();
+    this.musicSource = src;
+    this.musicSourceGain = g;
+    this.musicPlaying = track;
+  }
+
+  private stopSampleMusic(): void {
+    const src = this.musicSource;
+    const g = this.musicSourceGain;
+    this.musicSource = null;
+    this.musicSourceGain = null;
+    this.musicPlaying = null;
+    if (!src || !this.ctx) return;
+    const t = this.now();
+    try {
+      g?.gain.cancelScheduledValues(t);
+      g?.gain.setTargetAtTime(0, t, 0.15);
+      src.stop(t + 1);
+    } catch {
+      // already stopped
+    }
   }
 
   private startProcedural(): void {
@@ -568,6 +673,8 @@ class Engine implements BlitzAudio {
       clearInterval(this.musicTimer);
       this.musicTimer = null;
     }
+    this.musicToken++;
+    this.stopSampleMusic();
     this.userUrl = URL.createObjectURL(file);
     const el = new Audio(this.userUrl);
     el.loop = true;
