@@ -32,8 +32,7 @@ def clean(s):
     """Keep only the effect text: drop the name/HP-cost header lines and control codes."""
     s = s.replace("{09}0", "").replace("{0a})", "").replace("{0a}'", "").replace("{0b}1", "the confirm button")
     s = re.sub(r"\{[0-9a-f]{2}\}\d?", "", s)
-    lines = [l.strip() for l in s.split("
-") if l.strip()]
+    lines = [l.strip() for l in s.splitlines() if l.strip()]
     lines = [l for l in lines if not l.startswith("HP Cost") and not l.startswith("Equip HP Cost") and l not in ("% chance", "100% chance")]
     return " ".join(lines).replace("  ", " ").strip()
 
