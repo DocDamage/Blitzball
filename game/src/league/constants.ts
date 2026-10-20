@@ -66,7 +66,7 @@ export const AI_CONTRACT_GAMES = { min: 5, max: 20 } as const;
 export const AI_RESIGN_CHANCE = 0.6;
 
 /** Chance per expired-contract check that an AI team poaches a free agent that fits. */
-export const AI_POACH_CHANCE = 0.35;
+export const AI_POACH_CHANCE = 0.04; // per AI roster phase; original AI teams rarely change rosters
 
 /** Competition sizes. */
 export const LEAGUE_GAMES_PER_TEAM = 10;
