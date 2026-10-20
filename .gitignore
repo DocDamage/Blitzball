@@ -16,3 +16,4 @@ game/dist/
 *.log
 # Assets extracted from the disc (served by the dev server, never committed)
 game/public/ffx/
+tools/extract/spu_dec.dll
