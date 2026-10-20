@@ -1,0 +1,627 @@
+/* hud.css - DOM overlay for the playable match. Scaled through --hud-scale. */
+
+.blitz-hud {
+  --hud-scale: 1;
+  --hud-fg: #e6f0ff;
+  --hud-dim: rgba(230, 240, 255, 0.65);
+  --hud-bg: rgba(4, 16, 28, 0.72);
+  --hud-line: rgba(120, 200, 255, 0.3);
+  --hud-accent: #ffd54a;
+  --hud-good: #7df0a0;
+  --hud-bad: #ff8a7a;
+  --team0: #3b7bff;
+  --team1: #e24b4b;
+  --team0-ink: #ffffff;
+  --team1-ink: #ffffff;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  color: var(--hud-fg);
+  font:
+    500 calc(14px * var(--hud-scale)) / 1.35 system-ui,
+    "Segoe UI",
+    sans-serif;
+  user-select: none;
+  z-index: 10;
+}
+.blitz-hud[data-colorblind="true"] {
+  --team0: #0072b2;
+  --team1: #e69f00;
+  --team0-ink: #ffffff;
+  --team1-ink: #10131a;
+  --hud-good: #56b4e9;
+  --hud-bad: #d55e00;
+}
+.blitz-hud * {
+  box-sizing: border-box;
+}
+
+.blitz-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.blitz-stage > canvas {
+  position: absolute;
+  inset: 0;
+}
+.blitz-stage.blitz-shake {
+  animation: blitz-shake 0.35s linear;
+}
+@keyframes blitz-shake {
+  0% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-6px, 4px);
+  }
+  40% {
+    transform: translate(5px, -3px);
+  }
+  60% {
+    transform: translate(-4px, 2px);
+  }
+  80% {
+    transform: translate(3px, -2px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* ---------------------------------------------------------------- scoreboard */
+.hud-score {
+  position: absolute;
+  top: calc(12px * var(--hud-scale));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: stretch;
+  background: var(--hud-bg);
+  border: 1px solid var(--hud-line);
+  border-radius: calc(10px * var(--hud-scale));
+  overflow: hidden;
+  backdrop-filter: blur(6px);
+}
+.hud-score .team {
+  display: flex;
+  align-items: center;
+  gap: calc(8px * var(--hud-scale));
+  padding: calc(6px * var(--hud-scale)) calc(12px * var(--hud-scale));
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  min-width: calc(120px * var(--hud-scale));
+}
+.hud-score .team[data-team="0"] {
+  background: var(--team0);
+  color: var(--team0-ink);
+  justify-content: flex-end;
+}
+.hud-score .team[data-team="1"] {
+  background: var(--team1);
+  color: var(--team1-ink);
+}
+.hud-score .team .goals {
+  font-size: calc(22px * var(--hud-scale));
+  font-variant-numeric: tabular-nums;
+  min-width: 1.2em;
+  text-align: center;
+}
+.hud-score .team .poss {
+  width: calc(8px * var(--hud-scale));
+  height: calc(8px * var(--hud-scale));
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.hud-score .team.has-ball .poss {
+  opacity: 1;
+}
+.hud-score .clock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: calc(4px * var(--hud-scale)) calc(14px * var(--hud-scale));
+  font-variant-numeric: tabular-nums;
+}
+.hud-score .clock .time {
+  font-size: calc(20px * var(--hud-scale));
+  font-weight: 700;
+}
+.hud-score .clock .half {
+  font-size: calc(11px * var(--hud-scale));
+  color: var(--hud-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.hud-score .clock.slowmo .time {
+  color: var(--hud-accent);
+}
+
+/* ---------------------------------------------------------------- player panel */
+.hud-player {
+  position: absolute;
+  left: calc(16px * var(--hud-scale));
+  bottom: calc(16px * var(--hud-scale));
+  min-width: calc(260px * var(--hud-scale));
+  max-width: calc(360px * var(--hud-scale));
+  padding: calc(10px * var(--hud-scale)) calc(14px * var(--hud-scale));
+  background: var(--hud-bg);
+  border: 1px solid var(--hud-line);
+  border-left: calc(5px * var(--hud-scale)) solid var(--team0);
+  border-radius: calc(10px * var(--hud-scale));
+  backdrop-filter: blur(6px);
+}
+.hud-player[data-team="1"] {
+  border-left-color: var(--team1);
+}
+.hud-player.hidden {
+  display: none;
+}
+.hud-player .name {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: calc(17px * var(--hud-scale));
+  font-weight: 700;
+}
+.hud-player .name .role {
+  font-size: calc(11px * var(--hud-scale));
+  color: var(--hud-dim);
+  letter-spacing: 0.1em;
+}
+.hud-player .hpbar {
+  position: relative;
+  height: calc(10px * var(--hud-scale));
+  margin: calc(6px * var(--hud-scale)) 0;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.hud-player .hpbar .fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #4ad1ff, #7df0a0);
+  transition: width 0.12s linear;
+}
+.hud-player .hpbar.low .fill {
+  background: linear-gradient(90deg, #ff9d3b, #ff5a4a);
+}
+.hud-player .hptext {
+  font-size: calc(11px * var(--hud-scale));
+  color: var(--hud-dim);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  justify-content: space-between;
+}
+.hud-player .stats {
+  margin-top: calc(4px * var(--hud-scale));
+  font-size: calc(11.5px * var(--hud-scale));
+  font-variant-numeric: tabular-nums;
+  color: var(--hud-dim);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.hud-player .stats b {
+  color: var(--hud-fg);
+}
+.hud-player .statuses {
+  display: flex;
+  gap: calc(6px * var(--hud-scale));
+  margin-top: calc(4px * var(--hud-scale));
+  min-height: calc(16px * var(--hud-scale));
+}
+.hud-player .statuses span,
+.hud-player .contested {
+  font-size: calc(10.5px * var(--hud-scale));
+  padding: 1px calc(6px * var(--hud-scale));
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.hud-player .statuses .poison {
+  background: #5a2d8a;
+}
+.hud-player .statuses .sleep {
+  background: #2e4a8a;
+}
+.hud-player .statuses .wither {
+  background: #6a4a1a;
+}
+.hud-player .contested {
+  background: var(--hud-bad);
+  color: #10131a;
+  font-weight: 700;
+  display: none;
+}
+.hud-player.is-contested .contested {
+  display: inline-block;
+}
+
+/* ---------------------------------------------------------------- hotbar */
+.hud-hotbar {
+  position: absolute;
+  right: calc(16px * var(--hud-scale));
+  bottom: calc(16px * var(--hud-scale));
+  display: flex;
+  gap: calc(6px * var(--hud-scale));
+}
+.hud-hotbar.hidden {
+  display: none;
+}
+.hud-hotbar .slot {
+  width: calc(78px * var(--hud-scale));
+  min-height: calc(62px * var(--hud-scale));
+  padding: calc(5px * var(--hud-scale)) calc(6px * var(--hud-scale));
+  background: var(--hud-bg);
+  border: 1px solid var(--hud-line);
+  border-radius: calc(8px * var(--hud-scale));
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: calc(11px * var(--hud-scale));
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(6px);
+}
+.hud-hotbar .slot .key {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  font-size: calc(10px * var(--hud-scale));
+  color: var(--hud-dim);
+}
+.hud-hotbar .slot .tname {
+  font-weight: 700;
+  line-height: 1.15;
+  padding-right: 10px;
+}
+.hud-hotbar .slot .tcost {
+  color: var(--hud-dim);
+  font-variant-numeric: tabular-nums;
+}
+.hud-hotbar .slot.empty {
+  opacity: 0.35;
+}
+.hud-hotbar .slot.unusable {
+  opacity: 0.5;
+}
+.hud-hotbar .slot.unusable .tcost {
+  color: var(--hud-bad);
+}
+.hud-hotbar .slot.usable {
+  border-color: var(--hud-accent);
+}
+.hud-hotbar .slot .cool {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--hud-accent);
+  width: 0;
+}
+
+/* ---------------------------------------------------------------- marks */
+.hud-marks {
+  position: absolute;
+  left: calc(16px * var(--hud-scale));
+  top: calc(16px * var(--hud-scale));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: calc(11px * var(--hud-scale));
+  color: var(--hud-dim);
+}
+.hud-marks.hidden {
+  display: none;
+}
+.hud-marks .title {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: calc(10px * var(--hud-scale));
+}
+.hud-marks .mark {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.hud-marks .mark .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--team0);
+}
+.hud-marks .mark .dot.t1 {
+  background: var(--team1);
+}
+.hud-marks .mark b {
+  color: var(--hud-fg);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------- prompts */
+.hud-prompt {
+  position: absolute;
+  right: calc(16px * var(--hud-scale));
+  top: calc(16px * var(--hud-scale));
+  text-align: right;
+  font-size: calc(11px * var(--hud-scale));
+  color: var(--hud-dim);
+  line-height: 1.5;
+}
+.hud-prompt kbd {
+  display: inline-block;
+  padding: 0 5px;
+  border: 1px solid var(--hud-line);
+  border-radius: 4px;
+  font: inherit;
+  color: var(--hud-fg);
+  margin: 0 1px;
+}
+.hud-slowmo {
+  position: absolute;
+  left: 50%;
+  top: calc(84px * var(--hud-scale));
+  transform: translateX(-50%);
+  padding: 2px calc(14px * var(--hud-scale));
+  border-radius: 999px;
+  background: var(--hud-accent);
+  color: #10131a;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  font-size: calc(12px * var(--hud-scale));
+  opacity: 0;
+  transition: opacity 0.08s;
+}
+.hud-slowmo.on {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------- commentary */
+.hud-ticker {
+  position: absolute;
+  left: 50%;
+  bottom: calc(96px * var(--hud-scale));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  pointer-events: none;
+  width: min(80%, calc(640px * var(--hud-scale)));
+}
+.hud-ticker .line {
+  padding: 3px calc(12px * var(--hud-scale));
+  background: var(--hud-bg);
+  border: 1px solid var(--hud-line);
+  border-radius: 999px;
+  font-size: calc(13px * var(--hud-scale));
+  animation: hud-line-in 0.18s ease-out;
+  transition: opacity 0.4s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.hud-ticker .line.good {
+  border-color: var(--hud-good);
+}
+.hud-ticker .line.bad {
+  border-color: var(--hud-bad);
+}
+.hud-ticker .line.goal {
+  background: var(--hud-accent);
+  color: #10131a;
+  font-weight: 800;
+}
+.hud-ticker .line.whistle {
+  color: var(--hud-accent);
+}
+.hud-ticker .line.fading {
+  opacity: 0;
+}
+@keyframes hud-line-in {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ---------------------------------------------------------------- banners */
+.hud-banner {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: calc(8px * var(--hud-scale));
+  background: rgba(4, 16, 28, 0.45);
+}
+.hud-banner.on {
+  display: flex;
+}
+.hud-banner .title {
+  font-size: calc(44px * var(--hud-scale));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+}
+.hud-banner .sub {
+  font-size: calc(20px * var(--hud-scale));
+  color: var(--hud-fg);
+  font-variant-numeric: tabular-nums;
+}
+.hud-banner .prompt {
+  margin-top: calc(10px * var(--hud-scale));
+  font-size: calc(12px * var(--hud-scale));
+  color: var(--hud-dim);
+}
+.hud-banner.goal .title {
+  color: var(--hud-accent);
+}
+.hud-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+.hud-flash.on {
+  animation: hud-flash 0.45s ease-out;
+}
+@keyframes hud-flash {
+  from {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* ---------------------------------------------------------------- radial menu (tactical) */
+.hud-radial {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  background: rgba(4, 16, 28, 0.35);
+}
+.hud-radial.on {
+  display: flex;
+}
+.hud-radial .wheel {
+  position: relative;
+  width: calc(360px * var(--hud-scale));
+  height: calc(360px * var(--hud-scale));
+}
+.hud-radial .centre {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(130px * var(--hud-scale));
+  text-align: center;
+  font-size: calc(11px * var(--hud-scale));
+  color: var(--hud-dim);
+}
+.hud-radial .centre b {
+  display: block;
+  color: var(--hud-fg);
+  font-size: calc(14px * var(--hud-scale));
+}
+.hud-radial .opt {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(118px * var(--hud-scale));
+  margin-left: calc(-59px * var(--hud-scale));
+  margin-top: calc(-26px * var(--hud-scale));
+  padding: calc(6px * var(--hud-scale)) calc(8px * var(--hud-scale));
+  text-align: center;
+  background: var(--hud-bg);
+  border: 2px solid var(--hud-line);
+  border-radius: calc(10px * var(--hud-scale));
+  cursor: pointer;
+  transition:
+    transform 0.08s,
+    border-color 0.08s;
+  font-size: calc(12px * var(--hud-scale));
+}
+.hud-radial .opt .lbl {
+  font-weight: 700;
+  display: block;
+}
+.hud-radial .opt .sub {
+  color: var(--hud-dim);
+  font-size: calc(10.5px * var(--hud-scale));
+}
+.hud-radial .opt.selected {
+  border-color: var(--hud-accent);
+  transform: scale(1.08);
+}
+.hud-radial .opt.disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.hud-radial .opt.kind-shoot {
+  border-left-color: var(--hud-bad);
+}
+.hud-radial .opt.kind-technique .lbl {
+  color: var(--hud-accent);
+}
+
+/* ---------------------------------------------------------------- pause menu */
+.hud-pause {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 16, 28, 0.62);
+  pointer-events: auto;
+}
+.hud-pause.on {
+  display: flex;
+}
+.hud-pause .panel {
+  min-width: calc(280px * var(--hud-scale));
+  padding: calc(18px * var(--hud-scale)) calc(22px * var(--hud-scale));
+  background: var(--hud-bg);
+  border: 1px solid var(--hud-line);
+  border-radius: calc(12px * var(--hud-scale));
+  backdrop-filter: blur(8px);
+}
+.hud-pause h2 {
+  margin: 0 0 calc(12px * var(--hud-scale));
+  font-size: calc(18px * var(--hud-scale));
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.hud-pause .item {
+  display: flex;
+  justify-content: space-between;
+  padding: calc(8px * var(--hud-scale)) calc(10px * var(--hud-scale));
+  border-radius: calc(8px * var(--hud-scale));
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.hud-pause .item .val {
+  color: var(--hud-dim);
+}
+.hud-pause .item.selected {
+  border-color: var(--hud-accent);
+  background: rgba(255, 213, 74, 0.08);
+}
+.hud-pause .hint {
+  margin-top: calc(10px * var(--hud-scale));
+  font-size: calc(11px * var(--hud-scale));
+  color: var(--hud-dim);
+}
+
+@media (max-width: 720px) {
+  .hud-player {
+    max-width: 48vw;
+    min-width: 0;
+  }
+  .hud-hotbar .slot {
+    width: calc(58px * var(--hud-scale));
+  }
+  .hud-marks {
+    display: none;
+  }
+  .hud-prompt {
+    display: none;
+  }
+}
