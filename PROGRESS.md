@@ -30,7 +30,17 @@ Dev entry: `game/dev-match.html?mode=arcade|tactical|action&watch=1`.
 `game/src/league` + `game/src/data` (seasons, tournaments, contracts, growth with the original EXP awards, IndexedDB saves)
 and the app shell in `game/src/ui` (main menu, new game, team management, formation editor, scout, competitions hub,
 standings, results, prizes, settings with key rebinding, save/load). Full career loop verified in the browser.
-## Milestone 5 - polish: IN PROGRESS (audio layer being added; responsiveness, accessibility and difficulty options already in place)
+## Milestone 5 - polish: DONE for this session
+Procedural Web Audio (crowd, water, whistle, impacts, technique stings, goal fanfare, UI, optional user music file),
+fixed-step input (<50 ms), skip/fast-forward, instant AI-vs-AI simulation, gamepad + rebinding, UI scale, colourblind
+palette, screen-shake and reduced-flash toggles, three difficulty levels (AI reaction/noise only).
+
+## Not done / next
+* PCSX2 in-game spot check of three players' stats (plan 4.2): validated against community level-99 data instead.
+* Original Blitzball portraits, logos and 3D models (`tools/docs/models.md`); game uses rebuilt art.
+* EXP-to-level thresholds are fitted to the new-game roster data (native code, not in the script).
+* Mark Mode assignments are stored by the UI but not yet consumed by the simulation.
+* Balance pass with real play-testing; the Aurochs score rarely at new-game levels (matches the original data).
 
 ## Open questions (plan section 10) - working assumptions
 1. Story-only players: not in the roster (data has the 60 recruitable players only).
