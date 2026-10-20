@@ -37,7 +37,9 @@ palette, screen-shake and reduced-flash toggles, three difficulty levels (AI rea
 
 ## Not done / next
 * PCSX2 in-game spot check of three players' stats (plan 4.2): validated against community level-99 data instead.
-* Original Blitzball portraits, logos and 3D models (`tools/docs/models.md`); game uses rebuilt art.
+* Original Blitzball portraits, logos and 3D models: both time-box sessions spent (`tools/docs/models.md`, Session 2
+  lists the remaining leads: the native sprite handler 0x011B, a verified PSMT8 de-swizzle, ELF-resident CLUTs).
+  The game keeps its rebuilt art.
 * EXP-to-level thresholds are fitted to the new-game roster data (native code, not in the script).
 * Mark Mode assignments are stored by the UI but not yet consumed by the simulation.
 * Balance pass (2026-10-20, session 2): headless batch over all 30 matchups x 6 seeds (`BALANCE=1 npx vitest run src/sim/balance.test.ts`):
