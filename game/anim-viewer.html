@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blitzball - extracted animation viewer</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #04101c; color: #e6f0ff; font-family: system-ui, sans-serif; overflow: hidden; }
+      #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px; padding: 4px; }
+      figure { margin: 0; background: #0b2034; text-align: center; }
+      figure img { width: 100%; display: block; }
+      figcaption { font-size: 11px; padding: 2px 0 3px; }
+    </style>
+  </head>
+  <body>
+    <div id="grid"></div>
+    <script type="module" src="/src/dev/animViewer.ts"></script>
+  </body>
+</html>

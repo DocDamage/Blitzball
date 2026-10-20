@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { BallView } from "./ball";
 import { type CameraMode, CameraRig } from "./camera";
-import { CharacterSystem } from "./characters";
+import { OriginalCharacterSystem } from "./originalCharacters";
 import { type PoolBounds, type RenderSnapshot, toWorld } from "./renderState";
 import { createScene, createStadium, createWebGLRenderer, type Stadium } from "./scene";
 import { Vfx } from "./vfx";
@@ -32,7 +32,7 @@ export function createRenderer(container: HTMLElement, initialPool: PoolBounds =
   const renderer = createWebGLRenderer(container);
   const scene = createScene();
   const rig = new CameraRig(renderer.domElement, initialPool, aspectOf(container));
-  const characters = new CharacterSystem();
+  const characters = new OriginalCharacterSystem();
   const ball = new BallView();
   const vfx = new Vfx(initialPool);
   scene.add(characters.group, ball.group, vfx.group);
@@ -57,6 +57,7 @@ export function createRenderer(container: HTMLElement, initialPool: PoolBounds =
 
   const focus = new THREE.Vector3();
   const ballWorld = new THREE.Vector3();
+  const handPos = new THREE.Vector3();
   const tmp = { x: 0, y: 0, z: 0 };
 
   function resize(): void {
@@ -89,8 +90,10 @@ export function createRenderer(container: HTMLElement, initialPool: PoolBounds =
     ensurePool(snapshot.pool);
 
     stadium.update(time);
-    characters.update(snapshot.players, safeDt, rig.camera, snapshot.selectedPlayerId);
-    ball.update(snapshot.ball, safeDt);
+    characters.update(snapshot.players, safeDt, rig.camera, snapshot.selectedPlayerId, snapshot.ball.carrierId);
+    const carrier = snapshot.ball.carrierId;
+    const held = carrier !== null && characters.getHandWorldPosition(carrier, handPos) ? handPos : null;
+    ball.update(snapshot.ball, safeDt, held);
     vfx.update(safeDt);
 
     // Camera focus: carrier if any, else ball; zoom on shoot/tackle

@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { loadOriginalStadium } from "./originalStadium";
 import { GOAL_HEIGHT, GOAL_WIDTH, type PoolBounds, poolCentreWorld } from "./renderState";
 
 export const FOG_COLOR = 0x04101c;
@@ -32,7 +32,8 @@ export function createWebGLRenderer(container: HTMLElement): THREE.WebGLRenderer
 export function createScene(): THREE.Scene {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(FOG_COLOR);
-  scene.fog = new THREE.Fog(FOG_COLOR, 90, 320);
+  // The original stadium is several hundred units across around the sphere
+  scene.fog = new THREE.Fog(FOG_COLOR, 250, 1400);
 
   const hemi = new THREE.HemisphereLight(0x5a8fd6, 0x07101c, 0.9);
   scene.add(hemi);
@@ -171,9 +172,11 @@ export function createStadium(pool: PoolBounds): Stadium {
   const H = pool.maxZ - pool.minZ;
   const D = pool.maxY - pool.minY;
   const poolRadius = Math.max(W, D) / 2;
+  /** The play volume is a sphere (the sim clips it with the goal planes); its radius is half the pool depth. */
+  const sphereRadius = H / 2;
 
   // --- water volume -------------------------------------------------------
-  const waterGeo = new RoundedBoxGeometry(W + 2, H + 2, D + 2, 6, Math.min(W, H, D) * 0.42);
+  const waterGeo = new THREE.SphereGeometry(sphereRadius + 1, 96, 64);
   disposables.push(waterGeo);
   const backMat = makeWaterMaterial(THREE.BackSide, uTime, 0.15);
   const frontMat = makeWaterMaterial(THREE.FrontSide, uTime, 0.09);
@@ -195,17 +198,17 @@ export function createStadium(pool: PoolBounds): Stadium {
     depthWrite: false,
   });
   disposables.push(glowMat);
-  const ringGeo = new THREE.TorusGeometry(1, 0.18, 6, 96);
+  const ringGeo = new THREE.TorusGeometry(1, 0.004, 6, 160);
   disposables.push(ringGeo);
   const equator = new THREE.Mesh(ringGeo, glowMat);
   equator.rotation.x = Math.PI / 2;
-  equator.scale.set(W / 2 + 1.2, D / 2 + 1.2, 1);
+  equator.scale.setScalar(sphereRadius + 1.2);
   equator.position.set(c.x, c.y, c.z);
   group.add(equator);
   for (const rot of [0, Math.PI / 2]) {
     const rib = new THREE.Mesh(ringGeo, glowMat);
     rib.rotation.y = rot;
-    rib.scale.set(rot === 0 ? W / 2 + 1.2 : D / 2 + 1.2, H / 2 + 1.2, 1);
+    rib.scale.setScalar(sphereRadius + 1.2);
     rib.position.set(c.x, c.y, c.z);
     group.add(rib);
   }
@@ -255,8 +258,8 @@ export function createStadium(pool: PoolBounds): Stadium {
   const netMat = new THREE.LineBasicMaterial({ color: 0x9fd0ff, transparent: true, opacity: 0.45 });
   disposables.push(goalMat, netMat);
   const goalParts: THREE.BufferGeometry[] = [];
-  const postGeo = new THREE.CylinderGeometry(0.22, 0.22, GOAL_HEIGHT, 8);
-  const barGeo = new THREE.CylinderGeometry(0.22, 0.22, GOAL_WIDTH, 8);
+  const postGeo = new THREE.CylinderGeometry(0.35, 0.35, GOAL_HEIGHT, 8);
+  const barGeo = new THREE.CylinderGeometry(0.35, 0.35, GOAL_WIDTH, 8);
   barGeo.rotateX(Math.PI / 2);
   for (const side of [-1, 1]) {
     const gx = side < 0 ? pool.minX : pool.maxX;
@@ -310,43 +313,11 @@ export function createStadium(pool: PoolBounds): Stadium {
   centreRing.rotation.y = Math.PI / 2;
   centreRing.position.set(c.x, c.y, c.z);
   group.add(centreRing);
-  const midLineGeo = new THREE.BufferGeometry();
-  midLineGeo.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(
-      [
-        c.x,
-        pool.minZ,
-        -pool.minY,
-        c.x,
-        pool.minZ,
-        -pool.maxY,
-        c.x,
-        pool.minZ,
-        -pool.maxY,
-        c.x,
-        pool.maxZ,
-        -pool.maxY,
-        c.x,
-        pool.maxZ,
-        -pool.maxY,
-        c.x,
-        pool.maxZ,
-        -pool.minY,
-        c.x,
-        pool.maxZ,
-        -pool.minY,
-        c.x,
-        pool.minZ,
-        -pool.minY,
-      ],
-      3,
-    ),
-  );
-  disposables.push(midLineGeo);
-  const midLineMat = new THREE.LineBasicMaterial({ color: 0x7fe0ff, transparent: true, opacity: 0.35 });
-  disposables.push(midLineMat);
-  group.add(new THREE.LineSegments(midLineGeo, midLineMat));
+  // (the halfway plane is marked by the meridian rib of the sphere)
+
+  // --- procedural stadium (stands in until / unless the original map loads) --
+  const fallback = new THREE.Group();
+  group.add(fallback);
 
   // --- stadium bowl (single lathe mesh) -------------------------------------
   const bowlProfile: THREE.Vector2[] = [];
@@ -373,7 +344,7 @@ export function createStadium(pool: PoolBounds): Stadium {
   disposables.push(bowlMat);
   const bowl = new THREE.Mesh(bowlGeo, bowlMat);
   bowl.position.set(c.x, 0, c.z);
-  group.add(bowl);
+  fallback.add(bowl);
 
   // Tier rim lights (one merged line set)
   const rimPts: number[] = [];
@@ -391,7 +362,7 @@ export function createStadium(pool: PoolBounds): Stadium {
   rimGeo.setAttribute("position", new THREE.Float32BufferAttribute(rimPts, 3));
   const rimMat = new THREE.LineBasicMaterial({ color: 0x2a6fcf, transparent: true, opacity: 0.35 });
   disposables.push(rimGeo, rimMat);
-  group.add(new THREE.LineSegments(rimGeo, rimMat));
+  fallback.add(new THREE.LineSegments(rimGeo, rimMat));
 
   // Floodlight masts (merged into one geometry per material)
   const mastParts: THREE.BufferGeometry[] = [];
@@ -415,11 +386,11 @@ export function createStadium(pool: PoolBounds): Stadium {
   disposables.push(mastMat, lampMat);
   if (mastMerged) {
     disposables.push(mastMerged);
-    group.add(new THREE.Mesh(mastMerged, mastMat));
+    fallback.add(new THREE.Mesh(mastMerged, mastMat));
   }
   if (lampMerged) {
     disposables.push(lampMerged);
-    group.add(new THREE.Mesh(lampMerged, lampMat));
+    fallback.add(new THREE.Mesh(lampMerged, lampMat));
   }
 
   // --- crowd impostors (single instanced draw) ------------------------------
@@ -467,7 +438,7 @@ export function createStadium(pool: PoolBounds): Stadium {
   crowd.instanceMatrix.needsUpdate = true;
   if (crowd.instanceColor) crowd.instanceColor.needsUpdate = true;
   crowd.frustumCulled = false;
-  group.add(crowd);
+  fallback.add(crowd);
 
   // --- ground haze disc under the pool -------------------------------------
   const hazeGeo = new THREE.CircleGeometry(innerR, 48);
@@ -482,7 +453,23 @@ export function createStadium(pool: PoolBounds): Stadium {
   const haze = new THREE.Mesh(hazeGeo, hazeMat);
   haze.rotation.x = -Math.PI / 2;
   haze.position.set(c.x, baseY - 5.5, c.z);
-  group.add(haze);
+  fallback.add(haze);
+
+  // --- the original Luca stadium, when extracted ------------------------------
+  let disposed = false;
+  let original: Awaited<ReturnType<typeof loadOriginalStadium>> = null;
+  loadOriginalStadium(new THREE.Vector3(c.x, c.y, c.z), sphereRadius)
+    .then((st) => {
+      if (!st) return;
+      if (disposed) {
+        st.dispose();
+        return;
+      }
+      original = st;
+      group.add(st.root);
+      fallback.visible = false;
+    })
+    .catch((err) => console.warn("original stadium failed to load", err));
 
   return {
     group,
@@ -490,6 +477,8 @@ export function createStadium(pool: PoolBounds): Stadium {
       uTime.value = time;
     },
     dispose() {
+      disposed = true;
+      original?.dispose();
       for (const d of disposables) d.dispose();
       crowd.dispose();
       group.removeFromParent();

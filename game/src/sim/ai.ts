@@ -20,9 +20,14 @@ import {
   AI_KEEPER_TRACK_CLAMP,
   AI_LANE_CLEAR_DIST,
   AI_MARK_OFFSET,
+  AI_MARK_RANGE,
+  AI_MARK_SPRINT_DIST,
   AI_MAX_HOLD_TICKS,
   AI_MIN_HOLD_TICKS,
   AI_PRESSURED_MIN_HOLD_TICKS,
+  AI_RUN_DEPTH,
+  AI_RUN_SIDE_Y,
+  AI_RUN_SIDE_Z,
   AI_SHOT_CORNER_INSET_Y,
   AI_SHOT_CORNER_INSET_Z,
   AI_SHOT_MIN_CHANCE,
@@ -149,7 +154,7 @@ export function passQuality(m: Match, p: PlayerState, t: PlayerState): number {
   const lane = clamp01(m.laneClearance(p.team, p.pos, t.pos) / AI_LANE_CLEAR_DIST);
   const pressure = clamp01(m.nearestOpponentDistance(t) / 6);
   const dir = m.attackDir(p.team);
-  const advance = ((t.pos.x - p.pos.x) * dir) / 30;
+  const advance = ((t.pos.x - p.pos.x) * dir) / POOL_HALF.x;
   let q = lane * 0.45 + pressure * 0.25 + advance * 0.3 + 0.05;
   // flight decay: a pass that would arrive with no PA left is fumbled
   const arrival = m.passArrivalPower(p, t);
@@ -265,7 +270,8 @@ function supportIntent(m: Match, p: PlayerState, profile: TeamAiProfile): Player
   const dir = m.attackDir(p.team);
   if ((p.role === "LF" || p.role === "RF") && ball.pos.x * dir > 0) {
     const goal = m.goalCenter(p.team);
-    target = add(goal, v3(-dir * 10, p.role === "LF" ? 6 : -6, p.role === "LF" ? 3 : -3));
+    const side = p.role === "LF" ? 1 : -1;
+    target = add(goal, v3(-dir * AI_RUN_DEPTH, side * AI_RUN_SIDE_Y, side * AI_RUN_SIDE_Z));
   }
   // the two teammates nearest the carrier offer a short pass (flight decay kills long ones)
   const carrier = ball.carrier ? m.player(ball.carrier) : null;
@@ -314,9 +320,9 @@ function defendIntent(m: Match, p: PlayerState, profile: TeamAiProfile): PlayerI
   }
   const mark = m.markTarget(p);
   const own = m.ownGoalCenter(p.team);
-  if (mark && dist(mark.pos, ballPos) < 28) {
+  if (mark && dist(mark.pos, ballPos) < AI_MARK_RANGE) {
     const target = add(mark.pos, scale(normalize(sub(own, mark.pos)), AI_MARK_OFFSET));
-    return { moveTo: target, sprint: dist(p.pos, target) > 8 && p.hp > p.effectiveMaxHp * 0.4 };
+    return { moveTo: target, sprint: dist(p.pos, target) > AI_MARK_SPRINT_DIST && p.hp > p.effectiveMaxHp * 0.4 };
   }
   const preset = FORMATIONS[m.state.formations[p.team]];
   return { moveTo: m.formationSlot(p, preset.defenseShift), sprint: false };

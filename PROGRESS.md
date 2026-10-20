@@ -37,9 +37,13 @@ palette, screen-shake and reduced-flash toggles, three difficulty levels (AI rea
 
 ## Not done / next
 * PCSX2 in-game spot check of three players' stats (plan 4.2): validated against community level-99 data instead.
-* Original Blitzball portraits, logos and 3D models: both time-box sessions spent (`tools/docs/models.md`, Session 2
-  lists the remaining leads: the native sprite handler 0x011B, a verified PSMT8 de-swizzle, ELF-resident CLUTs).
-  The game keeps its rebuilt art.
+* Original 3D models + match motions: DONE (session 3, via Noesis; `tools/docs/models.md`). Matches now draw the real
+  Tidus, Wakka and all six teams' blitzers with the original swim/pass/shoot/tackle motions when the extracted assets
+  are present (`python tools/extract/blitz_assets.py`), falling back to the procedural figures otherwise.
+  Session 4: the original Luca stadium map is decoded and placed around a sphere-shaped play volume ~2.3x the old
+  pool (FIELD_SCALE / SPEED_SCALE in sim/constants.ts), the broadcast camera swims with the play, carried balls sit
+  in the carrier's hand, and bent team models now use Tidus's motions retargeted by joint position.
+  Still open: free agents' own models, the original blitzball model, portraits/logos (2D leads in models.md).
 * EXP-to-level thresholds are fitted to the new-game roster data (native code, not in the script).
 * Mark Mode assignments are stored by the UI but not yet consumed by the simulation.
 * Balance pass (2026-10-20, session 2): headless batch over all 30 matchups x 6 seeds (`BALANCE=1 npx vitest run src/sim/balance.test.ts`):

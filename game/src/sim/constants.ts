@@ -8,7 +8,7 @@
  *                              iteration; we assume 60 of them per second
  *   ORIG_UNITS_PER_POOL_UNIT   the original pool was measured in units where
  *                              an encounter radius was 130 and a shot decayed
- *                              every 100; our pool is 60 x 40 x 30 units
+ *                              every 100; our pool is a sphere (POOL_RADIUS)
  *   FRAMES_PER_GAME_SECOND     the match clock advanced one game-second every
  *                              ~19 frames (formulas.md section 7)
  * Units: pool distances are "pool units", speeds are pool units per second,
@@ -40,29 +40,42 @@ export const SLOW_MO_WINDOW_SECONDS = 0.4;
 export const RESET_FREEZE_SECONDS = 3.0;
 
 // ---------------------------------------------------------------- pool
-/** Half extents of the axis-aligned pool box: 60 long (x), 40 across (y), 30 deep (z). */
-export const POOL_HALF = Object.freeze({ x: 30, y: 20, z: 15 });
+/**
+ * The pool is a sphere of water, as in the original. FIELD_SCALE sizes it against the players (1 = the earlier
+ * 60 x 40 x 30 box game; at 2.3 the sphere is ~33 player heights across, with the original Luca stadium around it).
+ * Contact distances (encounters, catches, pickups, blocks) stay player-sized; field-sized distances scale.
+ */
+export const FIELD_SCALE = 2.3;
+/** Swim and ball speeds scale less than the field so the bigger sphere still plays at a match pace. */
+export const SPEED_SCALE = 1.6;
+export const POOL_RADIUS = 30 * FIELD_SCALE;
+/** The goal mouth grows less than the field (a bigger mouth makes keepers far easier to beat). */
+export const GOAL_SCALE = 1.3;
+/** Goal mouth half extents on the goal planes. */
+export const GOAL_HALF_HEIGHT = 7 * GOAL_SCALE; // along y
+export const GOAL_HALF_DEPTH = 5 * GOAL_SCALE; // along z
+/** The goal planes sit where the goal mouth's corners touch the sphere. */
+export const GOAL_X = Math.sqrt(POOL_RADIUS ** 2 - GOAL_HALF_HEIGHT ** 2 - GOAL_HALF_DEPTH ** 2);
+/** Bounding half extents of the play volume (sphere clipped by the goal planes). */
+export const POOL_HALF = Object.freeze({ x: GOAL_X, y: POOL_RADIUS, z: POOL_RADIUS });
 /** Original script distance units per pool unit (encounter radius 130 -> 3.25 pool units). */
 export const ORIG_UNITS_PER_POOL_UNIT = 50;
 export function origUnits(u: number): number {
   return u / ORIG_UNITS_PER_POOL_UNIT;
 }
-/** Goal mouth half extents on the x = +-POOL_HALF.x planes. */
-export const GOAL_HALF_HEIGHT = 7; // along y
-export const GOAL_HALF_DEPTH = 5; // along z
 /** The keeper may not leave this strip in front of its own goal. */
-export const KEEPER_ZONE_DEPTH = 9;
+export const KEEPER_ZONE_DEPTH = 9 * GOAL_SCALE;
 export const PLAYER_RADIUS = 0.8;
 /** Formation slots in team-local [-1,1] coordinates are scaled by these. */
-export const FORMATION_SCALE = Object.freeze({ x: 27, y: 17, z: 11 });
+export const FORMATION_SCALE = Object.freeze({ x: 27 * FIELD_SCALE, y: 17 * FIELD_SCALE, z: 11 * FIELD_SCALE });
 /** At kickoff every outfield player is pulled back to at least this local x. */
 export const KICKOFF_MAX_LOCAL_X = -0.15;
 
 // ---------------------------------------------------------------- movement
 /** Movement speed is the SP stat used directly in the original; here SP * SPEED_PER_SP pool units/s. */
-export const SPEED_PER_SP = 0.03; // SP 40 -> 2.4, SP 60 -> 3.0, SP 99 -> 4.2 units/s
+export const SPEED_PER_SP = 0.03 * SPEED_SCALE; // with SPEED_BASE: SP 40 -> 3.8, SP 60 -> 4.8, SP 99 -> 6.7 units/s
 /** Base swim speed added to SP * SPEED_PER_SP: compresses SP differences so slow teams stay playable in real time. */
-export const SPEED_BASE = 1.2;
+export const SPEED_BASE = 1.2 * SPEED_SCALE;
 /** Sprint is a sim extension (no sprint in the original): faster, costs HP. */
 export const SPRINT_MULT = 1.35;
 export const SPRINT_HP_PER_SECOND = 1.5;
@@ -78,7 +91,7 @@ export const BRAWLER_EXTRA_RADIUS = origUnits(120);
 /** At most this many defenders take part in one encounter. */
 export const MAX_ENCOUNTER_DEFENDERS = 5;
 /** A defender locks onto the carrier below this distance (original 290, +100 with Elite Defense). */
-export const DEFENDER_LOCK_RADIUS = origUnits(290);
+export const DEFENDER_LOCK_RADIUS = origUnits(290) * SPEED_SCALE;
 export const ELITE_DEFENSE_EXTRA_RADIUS = origUnits(100);
 /** Stun applied to a player who loses the ball to a tackle / block (original 100 frames). */
 export const BALL_LOST_STUN_FRAMES = 100;
@@ -88,12 +101,12 @@ export const TACKLE_COOLDOWN_SECONDS = 0.6;
 export const TACKLE_WHIFF_STUN_SECONDS = 0.6;
 
 // ---------------------------------------------------------------- flight (passes and shots)
-export const PASS_BASE_SPEED = 9;
-export const PASS_SPEED_PER_PA = 0.25;
-export const SHOT_BASE_SPEED = 12;
-export const SHOT_SPEED_PER_SH = 0.25;
+export const PASS_BASE_SPEED = 9 * SPEED_SCALE;
+export const PASS_SPEED_PER_PA = 0.25 * SPEED_SCALE;
+export const SHOT_BASE_SPEED = 12 * SPEED_SCALE;
+export const SHOT_SPEED_PER_SH = 0.25 * SPEED_SCALE;
 /** Flight decay: every time the distance to the receiver / goal crosses a multiple of this, stat -= max(1, stat/5). */
-export const FLIGHT_DECAY_DISTANCE = origUnits(100);
+export const FLIGHT_DECAY_DISTANCE = origUnits(100) * SPEED_SCALE;
 export const FLIGHT_DECAY_DIVISOR = 5;
 export const GOLDEN_ARM_DECAY_DIVISOR = 10;
 export const CATCH_RADIUS = 1.7;
@@ -183,13 +196,21 @@ export const AI_SHOT_WEIGHT_BY_ZONE: readonly number[] = [1 / 16, 1 / 8, 1 / 4, 
 /** The AI only shoots when its estimated chance of beating the goalie roll is at least this. */
 export const AI_SHOT_MIN_CHANCE = 0.08;
 /** Supporting teammates offer themselves this far ahead / beside the carrier. */
-export const AI_SUPPORT_AHEAD = 4;
-export const AI_SUPPORT_SIDE = 3.5;
+export const AI_SUPPORT_AHEAD = 4 * SPEED_SCALE;
+export const AI_SUPPORT_SIDE = 3.5 * SPEED_SCALE;
 /** AI aims this far inside the goal corners (y / z). */
-export const AI_SHOT_CORNER_INSET_Y = 2.5;
-export const AI_SHOT_CORNER_INSET_Z = 2.0;
+export const AI_SHOT_CORNER_INSET_Y = 2.5 * GOAL_SCALE;
+export const AI_SHOT_CORNER_INSET_Z = 2.0 * GOAL_SCALE;
 export const AI_MARK_OFFSET = 2.5;
 export const AI_LANE_CLEAR_DIST = 4;
 /** Keeper follows the ball's y/z by this factor, clamped to +-AI_KEEPER_TRACK_CLAMP units. */
 export const AI_KEEPER_TRACK = 0.4;
-export const AI_KEEPER_TRACK_CLAMP = 3;
+export const AI_KEEPER_TRACK_CLAMP = 3 * GOAL_SCALE;
+/** Forwards' runs toward goal: this far out from the goal, this far off centre (y, z). */
+export const AI_RUN_DEPTH = 10 * FIELD_SCALE;
+export const AI_RUN_SIDE_Y = 6 * FIELD_SCALE;
+export const AI_RUN_SIDE_Z = 3 * FIELD_SCALE;
+/** A marker only shadows its man while the ball is within this distance of him. */
+export const AI_MARK_RANGE = 28 * FIELD_SCALE;
+/** Markers sprint to their position when further than this. */
+export const AI_MARK_SPRINT_DIST = 8 * SPEED_SCALE;

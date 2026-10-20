@@ -87,6 +87,7 @@ import {
   PLAYER_RADIUS,
   POISON_DRAIN,
   POOL_HALF,
+  POOL_RADIUS,
   RESET_FREEZE_SECONDS,
   SHOT_ACCURACY_BASE,
   SHOT_BASE_SPEED,
@@ -130,7 +131,21 @@ import {
   type Technique,
   type TechniqueKind,
 } from "./types";
-import { add, clampBox, dist, distToSegment, dot, isZero, len, normalize, scale, sub, type Vec3, v3 } from "./vec";
+import {
+  add,
+  clampBox,
+  clampSphere,
+  dist,
+  distToSegment,
+  dot,
+  isZero,
+  len,
+  normalize,
+  scale,
+  sub,
+  type Vec3,
+  v3,
+} from "./vec";
 
 export interface MatchOptions {
   seed: number;
@@ -773,7 +788,7 @@ export class Match {
   }
 
   private clampPlayer(p: PlayerState, pos: Vec3): Vec3 {
-    const c = clampBox(pos, POOL_HALF);
+    const c = clampSphere(clampBox(pos, POOL_HALF), POOL_RADIUS - PLAYER_RADIUS);
     if (p.role === "GK") {
       // keeper stays inside the strip in front of its own goal
       const own = this.ownGoalCenter(p.team).x;
@@ -1268,15 +1283,18 @@ export class Match {
 
   private bounce(): void {
     const b = this.state.ball;
-    const axes = ["x", "y", "z"] as const;
-    for (const a of axes) {
-      if (b.pos[a] > POOL_HALF[a]) {
-        b.pos[a] = POOL_HALF[a];
-        b.vel[a] = -Math.abs(b.vel[a]) * WALL_BOUNCE;
-      } else if (b.pos[a] < -POOL_HALF[a]) {
-        b.pos[a] = -POOL_HALF[a];
-        b.vel[a] = Math.abs(b.vel[a]) * WALL_BOUNCE;
-      }
+    // the goal planes
+    if (Math.abs(b.pos.x) > POOL_HALF.x) {
+      b.pos.x = Math.sign(b.pos.x) * POOL_HALF.x;
+      b.vel.x = -Math.sign(b.pos.x) * Math.abs(b.vel.x) * WALL_BOUNCE;
+    }
+    // the sphere wall: reflect the outward part of the velocity
+    const r = len(b.pos);
+    if (r > POOL_RADIUS) {
+      const n = scale(b.pos, 1 / r);
+      b.pos = scale(n, POOL_RADIUS);
+      const out = dot(b.vel, n);
+      if (out > 0) b.vel = sub(b.vel, scale(n, out * (1 + WALL_BOUNCE)));
     }
   }
 
@@ -1346,8 +1364,7 @@ export class Match {
       return;
     }
     // overshoot or wall -> loose ball
-    const outside =
-      Math.abs(b.pos.x) > POOL_HALF.x || Math.abs(b.pos.y) > POOL_HALF.y || Math.abs(b.pos.z) > POOL_HALF.z;
+    const outside = Math.abs(b.pos.x) > POOL_HALF.x || len(b.pos) > POOL_RADIUS;
     if (f.travelled > f.aimDistance + PASS_OVERSHOOT || outside) {
       b.flight = null;
       b.vel = scale(b.vel, 0.3);
@@ -1410,7 +1427,7 @@ export class Match {
     const crossed = (b.pos.x - goalX) * this.attackDir(f.team) >= 0;
     const keeper = this.keeperOf(defending);
     if (!crossed) {
-      if (Math.abs(b.pos.y) > POOL_HALF.y || Math.abs(b.pos.z) > POOL_HALF.z) this.outOfBounds(keeper);
+      if (len(b.pos) > POOL_RADIUS) this.outOfBounds(keeper);
       return;
     }
     const onTarget = Math.abs(b.pos.y) <= GOAL_HALF_HEIGHT && Math.abs(b.pos.z) <= GOAL_HALF_DEPTH;

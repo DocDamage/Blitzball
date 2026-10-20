@@ -73,3 +73,42 @@ CLUT locations and the Blitzball model ids, but no vertex/UV decoding and no ver
 Three.js fallback models. Remaining 2D leads, in order of promise: (1) the native handler of script call 0x011B
 (find the Common call table in the ELF, resolve the `(group,index)` word to a texture source), (2) a verified PSMT8 de-swizzle
 tested against 00442's TEX0 descriptors, (3) the executable-resident CLUTs for the 00422/00423/00424 portrait sheets.
+
+## Session 3 (2026-10-20): solved with Noesis
+
+Rich Whitehouse's Noesis (v4.474, free, `C:\Users\<user>\noesis`) has built-in FFX PS2 support (model/anim spec by
+"revelation"). `Noesis64.exe ?cmode "<iso>" "<out>"` extracts the disc into `type0..type6/mdlNNNN.ffm` (+ `_aN.ffa`
+motion banks); `tools/extract/noesis_models.py` converts them to glTF. Write `.gltf`: Noesis's `.glb` is its own format.
+Model space is Y-down.
+
+* type0 = party (0 Tidus, 1 Yuna, 2 Auron, 3 Kimahri, 4 Wakka, 5 Lulu, 6 Rikku, ...; 12-31 hi-res), type2 = textured
+  NPCs, type4 = weapons (Wakka's blitzballs), type5 = props, type6 = untextured generic bodies.
+* type2 index = position in FFXDataParser's models.csv 2xxx list minus 23 (minus 24 from 0x2116 on). Blitzball team
+  models (BLZ_*): Aurochs 107-111, Kilika 112-116, Luca 117-121, Guado 122-125, Psyches 126-130, Ronso 131-134,
+  Nav Guado 172, Gazna Ronso 173. players.json `modelIndex` 0..33 maps onto them (blitz_assets.py).
+* The match motion pack (fid 01604) is an .ffa with 10 directory entries (Tidus 0001, Wakka 0005, generic bodies
+  6004/600E/6067/6071/60CB/60D5, ...). Noesis only loads an .ffa named `mdlNNNN_aN.ffa` beside `mdlNNNN.ffm` whose
+  directory ends the file, so `blitz_motions.py` carves one entry per file. Noesis binds motion channels by bone
+  index without checking, so a set only works on models rigged in the same bone order: humans (Luca, Kilika,
+  Psyches) take 6004, the Aurochs take 600E, Ronso 6067, Guado 60CB. Only bone rotations are kept (play in place).
+* Each set stores the same choreography in its own clip order; the per-set action tables in `blitz_assets.py` were
+  read off filmstrips (`game/anim-viewer.html`). Free agents (modelIndex 34..54) have no Blitzball model and wear their
+  team's uniform models.
+* Dev pages: `game/model-viewer.html?filter=type2/`, `game/anim-viewer.html?m=<baked dir>&rot=1&clip=all`,
+  `game/char-test.html?players=0,1,2&action=swim&view=top`.
+
+## Session 4 (2026-10-20): stadium, retargeting, sphere play volume
+
+* Field maps are `MAP1` files (Noesis section 019). Slot 5 (`0x214365`) holds VIF streams: per batch a 10-qword
+  header (GIF tag + A+D writes; the last TEX0 write is the one in effect, and it carries over to batches that set
+  none), RGBA8 colours, UV16 (texels*16) and float xyz, as a triangle list (`tools/extract/vif.py`, `mapgeom.py`).
+  Textures live in the texture-only `MAP1` file just before the geometry map: type-2 records `{1, DBP, DBW, PSM}` at
+  +0x40 and pixels at +0x80 stored for a PSMCT32 upload (PSMT4/PSMT8 unswizzle formulas), type-3 = palette area,
+  a 256-wide PSMCT32 image at 0x2080 read through the GS emulator (`gsmem.py`, CSM1 + CSA sub-palettes).
+* The Luca stadium is file3064 (+ textures in file3063), found by fitting spheres to every map's mesh groups
+  (`find_spheres.py`). `blitz_stadium.py` exports it; the water surface shell (radius ~62.4 map units) is lined up
+  with the play sphere and everything inside the outer sphere (radius 80) is hidden.
+* Team models whose bone order does not match a match motion set are driven by Tidus's motions retargeted by
+  joint position at load time (`game/src/render/retarget.ts`); only the Ronso keep their own set.
+* The sim's play volume is now a sphere (`POOL_RADIUS`, `FIELD_SCALE` 2.3, `SPEED_SCALE` 1.6); balance batch
+  over 240 matches: 5.8 goals/match, 23.8 shots, 75% on target, 60% passes.

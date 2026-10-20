@@ -152,6 +152,8 @@ export function movementAction(speed01: number): PlayerAction {
 export interface AdapterOptions {
   selectedPlayerId?: string | null;
   tracker?: ActionTracker;
+  /** data/json team ids of [home, away]; lets the renderer pick team uniforms. */
+  teamDataIds?: [number | undefined, number | undefined];
 }
 
 export function toRenderPlayer(p: PlayerState, tick: number, tracker?: ActionTracker): RenderPlayer {
@@ -168,12 +170,19 @@ export function toRenderPlayer(p: PlayerState, tick: number, tracker?: ActionTra
     hp: p.maxHp > 0 ? Math.max(0, Math.min(1, p.hp / p.maxHp)) : 0,
     statuses: statusesOf(p),
     isKeeper: p.role === "GK",
+    dataId: p.def.dataId,
   };
 }
 
 /** Build the renderer's snapshot from the sim state. Never mutates the state. */
 export function toRenderSnapshot(state: MatchState, opts: AdapterOptions = {}): RenderSnapshot {
-  const players = state.players.map((p) => toRenderPlayer(p, state.tick, opts.tracker));
+  const sideSlots: [number, number] = [0, 0];
+  const players = state.players.map((p) => {
+    const r = toRenderPlayer(p, state.tick, opts.tracker);
+    r.teamDataId = opts.teamDataIds?.[p.team];
+    r.slot = sideSlots[p.team]++;
+    return r;
+  });
   return {
     pool: RENDER_POOL,
     ball: { position: simToRenderPos(state.ball.pos), carrierId: state.ball.carrier },

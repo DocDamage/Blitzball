@@ -61,6 +61,12 @@ export function isZero(a: Vec3): boolean {
 }
 
 /** Clamp every component into [-half, +half] of the given box. */
+/** Pull a point back inside a sphere of radius r centred on the origin. */
+export function clampSphere(a: Vec3, r: number): Vec3 {
+  const l = Math.hypot(a.x, a.y, a.z);
+  return l > r ? { x: (a.x * r) / l, y: (a.y * r) / l, z: (a.z * r) / l } : a;
+}
+
 export function clampBox(a: Vec3, half: Vec3): Vec3 {
   return {
     x: Math.max(-half.x, Math.min(half.x, a.x)),

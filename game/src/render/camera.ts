@@ -14,6 +14,9 @@ export interface CameraContext {
 }
 
 const BROADCAST_FOV = 48;
+/** Broadcast rig offset from the action (world units; a blitzer is ~4 tall). */
+const BROADCAST_DISTANCE = 26;
+const BROADCAST_HEIGHT = 9;
 const ZOOM_FOV = 34;
 
 function damp(current: number, target: number, lambda: number, dt: number): number {
@@ -33,7 +36,7 @@ export class CameraRig {
   private initialised = false;
 
   constructor(domElement: HTMLElement, pool: PoolBounds, aspect: number) {
-    this.camera = new THREE.PerspectiveCamera(BROADCAST_FOV, aspect, 0.5, 600);
+    this.camera = new THREE.PerspectiveCamera(BROADCAST_FOV, aspect, 0.5, 3000);
     this.pool = pool;
     const c = poolCentreWorld(pool);
     this.centre.set(c.x, c.y, c.z);
@@ -42,7 +45,7 @@ export class CameraRig {
     this.controls.dampingFactor = 0.08;
     this.controls.target.copy(this.centre);
     this.controls.minDistance = 10;
-    this.controls.maxDistance = 250;
+    this.controls.maxDistance = 900;
     this.controls.enabled = false;
     this.camera.position.set(c.x, c.y + 20, c.z + 70);
     this.camera.lookAt(this.centre);
@@ -85,23 +88,18 @@ export class CameraRig {
     const c = this.centre;
     const W = p.maxX - p.minX;
     const D = p.maxY - p.minY;
-    const H = p.maxZ - p.minZ;
 
     switch (this.mode) {
       case "broadcast": {
         this.zoomAmount = damp(this.zoomAmount, ctx.zoom ? 1 : 0, ctx.zoom ? 5 : 2.5, safeDt);
         const z = this.zoomAmount;
-        // Sideline rig on the +z side, following the x of the action, slightly above the pool.
+        // The sphere is far bigger than the players, so the rig swims with the action like the original's match
+        // camera: off the action's +z side and a little above, at a player-scale distance, looking at the play.
         const fx = THREE.MathUtils.clamp(ctx.focus.x, p.minX, p.maxX);
-        const trackX = c.x + (fx - c.x) * 0.8;
-        const sideDist = D / 2 + W * 0.62 * (1 - 0.3 * z);
-        const height = p.maxZ + H * 0.38 * (1 - 0.35 * z);
-        this.desiredPos.set(trackX, height, c.z + sideDist);
-        this.desiredLook.set(
-          THREE.MathUtils.lerp(c.x, fx, 0.85),
-          THREE.MathUtils.lerp(c.y, ctx.focus.y, 0.5 + 0.4 * z),
-          THREE.MathUtils.lerp(c.z, ctx.focus.z, 0.45 + 0.4 * z),
-        );
+        const sideDist = BROADCAST_DISTANCE * (1 - 0.3 * z);
+        const height = BROADCAST_HEIGHT * (1 - 0.35 * z);
+        this.desiredPos.set(fx - Math.sign(fx - c.x) * 4, ctx.focus.y + height, ctx.focus.z + sideDist);
+        this.desiredLook.set(fx, ctx.focus.y, ctx.focus.z);
         if (!this.initialised) {
           this.camera.position.copy(this.desiredPos);
           this.lookTarget.copy(this.desiredLook);

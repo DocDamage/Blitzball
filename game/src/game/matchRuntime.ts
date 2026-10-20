@@ -477,7 +477,11 @@ class MatchRuntime implements MatchHandle {
   private draw(realDt: number): void {
     const m = this.match;
     const selectedId = this.options.humanTeam !== null ? this.control.controlledId : m.state.ball.carrier;
-    const snapshot = toRenderSnapshot(m.state, { selectedPlayerId: selectedId, tracker: this.tracker });
+    const snapshot = toRenderSnapshot(m.state, {
+      selectedPlayerId: selectedId,
+      tracker: this.tracker,
+      teamDataIds: [m.teams[0].dataId, m.teams[1].dataId],
+    });
     this.renderer.update(snapshot, this.paused ? 0 : realDt);
     this.hud.update(this.hudView(selectedId));
   }

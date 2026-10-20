@@ -146,10 +146,12 @@ export class BallView {
     this.group.add(this.trail);
   }
 
-  update(ball: BallState, dt: number): void {
+  /** `held`: where the carrier's hand is, when the character renderer knows it. */
+  update(ball: BallState, dt: number, held?: THREE.Vector3 | null): void {
     toWorld(ball.position, _w);
     const pos = this.mesh.position;
-    pos.set(_w.x, _w.y, _w.z);
+    if (held && ball.carrierId !== null) pos.copy(held);
+    else pos.set(_w.x, _w.y, _w.z);
     const carried = ball.carrierId !== null;
 
     if (this.hasPrev && dt > 0) {

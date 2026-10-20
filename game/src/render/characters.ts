@@ -337,6 +337,10 @@ export class CharacterSystem {
     this.hpFill.renderOrder = 31;
     this.hpBg.frustumCulled = false;
     this.hpFill.frustumCulled = false;
+    for (let i = 0; i < N; i++) {
+      this.hpBg.setMatrixAt(i, _hidden);
+      this.hpFill.setMatrixAt(i, _hidden);
+    }
     this.group.add(this.hpBg, this.hpFill);
 
     // Status icons
@@ -349,6 +353,8 @@ export class CharacterSystem {
       const mesh = new THREE.InstancedMesh(iconGeo, mat, N);
       mesh.renderOrder = 32;
       mesh.frustumCulled = false;
+      // Unused slots would otherwise draw at the origin
+      for (let i = 0; i < N; i++) mesh.setMatrixAt(i, _hidden);
       this.group.add(mesh);
       return mesh;
     };
@@ -502,6 +508,8 @@ export class CharacterSystem {
     dt: number,
     camera: THREE.Camera,
     selectedId: string | null | undefined,
+    /** Players drawn by another system (e.g. the original models): keep their HP bar/status/ring, skip the body. */
+    hideBodies?: ReadonlySet<string>,
   ): void {
     this.time += dt;
     const seen = new Set<string>();
@@ -556,7 +564,8 @@ export class CharacterSystem {
       r.kneeL.rotation.z = -pose[J_KNEEL];
       r.kneeR.rotation.z = -pose[J_KNEER];
       r.root.updateMatrixWorld(true);
-      for (const part of r.parts) part.mesh.setMatrixAt(part.index, part.leaf.matrixWorld);
+      const hidden = hideBodies?.has(p.id) === true;
+      for (const part of r.parts) part.mesh.setMatrixAt(part.index, hidden ? _hidden : part.leaf.matrixWorld);
 
       // HP bar (billboard)
       const barW = 2.2;

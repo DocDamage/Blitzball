@@ -75,6 +75,12 @@ export interface PlayerState {
   statuses: string[];
   /** Optional: goalkeeper gets a distinct colour scheme. */
   isKeeper?: boolean;
+  /** Optional: data/json player id, picks the player's original model. */
+  dataId?: number;
+  /** Optional: data/json team id of the player's side, picks the uniform for players without their own model. */
+  teamDataId?: number;
+  /** Optional: index of the player within their side (0..5), spreads uniform models across a team. */
+  slot?: number;
 }
 
 export interface RenderSnapshot {
@@ -93,8 +99,8 @@ export interface RenderSnapshot {
 }
 
 /** Goal frame dimensions in pool units (centred on the end wall). */
-export const GOAL_WIDTH = 8;
-export const GOAL_HEIGHT = 6;
+export const GOAL_WIDTH = 18.2; // sim GOAL_HALF_HEIGHT * 2 (pool y)
+export const GOAL_HEIGHT = 13; // sim GOAL_HALF_DEPTH * 2 (pool z)
 
 /** Sim pool coordinates -> Three.js world coordinates (z up becomes y up). */
 export function toWorld(p: Vec3, out: { x: number; y: number; z: number }): void {
