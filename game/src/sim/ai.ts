@@ -22,6 +22,7 @@ import {
   AI_MARK_OFFSET,
   AI_MAX_HOLD_TICKS,
   AI_MIN_HOLD_TICKS,
+  AI_PRESSURED_MIN_HOLD_TICKS,
   AI_SHOT_CORNER_INSET_Y,
   AI_SHOT_CORNER_INSET_Z,
   AI_SHOT_MIN_CHANCE,
@@ -194,7 +195,7 @@ function carrierIntent(m: Match, p: PlayerState, profile: TeamAiProfile): Player
     let sumAt = 0;
     for (const d of defenders) sumAt += m.effectiveStats(d).at;
     const canBreakAll = (p.contestEn ?? st.en) >= sumAt;
-    act = !(canBreakAll && m.rng.pct() < AI_DRIBBLE_PCT_BY_ZONE[zone]);
+    act = held >= AI_PRESSURED_MIN_HOLD_TICKS && !(canBreakAll && m.rng.pct() < AI_DRIBBLE_PCT_BY_ZONE[zone]);
   } else {
     act = held >= AI_MIN_HOLD_TICKS && m.rng.pct() < AI_ACT_PCT_BY_ZONE[zone] * AI_ACT_PCT_SCALE;
   }
@@ -213,7 +214,8 @@ function carrierIntent(m: Match, p: PlayerState, profile: TeamAiProfile): Player
     else shotTech = undefined;
   }
   // close to goal the original AI shoots on weight alone; further out we also require a minimal estimated chance
-  const inRange = m.shotInRange(p) && (shotChance >= AI_SHOT_MIN_CHANCE || zone >= 5);
+  // the original AI shoots on weight alone; we also require a minimal estimated chance except point blank (zone 6)
+  const inRange = m.shotInRange(p) && (shotChance >= AI_SHOT_MIN_CHANCE || zone >= 6);
   const wantShot = inRange && m.rng.float() * (st.pa * w.pass + shotWeight) < shotWeight;
   if (wantShot) {
     return { sprint: false, action: { kind: "shoot", aim: bestShotAim(m, p), techniqueId: shotTech?.id } };

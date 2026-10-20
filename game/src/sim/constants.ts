@@ -24,21 +24,26 @@ export const ORIGINAL_FPS = 60;
 export function framesToTicks(frames: number): number {
   return Math.max(1, Math.round((frames * TICK_RATE) / ORIGINAL_FPS));
 }
-/** The original clock ticked one game-second per wait(15)+wait(4) frames (~19). */
-export const FRAMES_PER_GAME_SECOND = 19;
-/** Game-seconds per half (5:00 on the original clock). */
-export const DEFAULT_HALF_SECONDS = 300;
+/**
+ * Ticks per game-second of the clock. The original ticked one game-second per ~19 frames (its 5:00 halves ran
+ * about three times faster than real time, with the clock paused during encounters). This real-time game runs
+ * the clock in real seconds; the original rate is kept for reference as ORIGINAL_FRAMES_PER_GAME_SECOND.
+ */
+export const FRAMES_PER_GAME_SECOND = 60;
+export const ORIGINAL_FRAMES_PER_GAME_SECOND = 19;
+/** Real seconds per half by default (3:00; 1, 3 and 5 minute options in settings). */
+export const DEFAULT_HALF_SECONDS = 180;
 export const DEFAULT_OVERTIME_SECONDS = 300;
 /** Suggested slow-motion window for contested shots/tackles (presentation hint only). */
 export const SLOW_MO_WINDOW_SECONDS = 0.4;
 /** Freeze (real seconds) after a goal / at kickoff before play resumes; the clock does not run. */
-export const RESET_FREEZE_SECONDS = 1.5;
+export const RESET_FREEZE_SECONDS = 3.0;
 
 // ---------------------------------------------------------------- pool
 /** Half extents of the axis-aligned pool box: 60 long (x), 40 across (y), 30 deep (z). */
 export const POOL_HALF = Object.freeze({ x: 30, y: 20, z: 15 });
 /** Original script distance units per pool unit (encounter radius 130 -> 3.25 pool units). */
-export const ORIG_UNITS_PER_POOL_UNIT = 45;
+export const ORIG_UNITS_PER_POOL_UNIT = 50;
 export function origUnits(u: number): number {
   return u / ORIG_UNITS_PER_POOL_UNIT;
 }
@@ -55,9 +60,9 @@ export const KICKOFF_MAX_LOCAL_X = -0.15;
 
 // ---------------------------------------------------------------- movement
 /** Movement speed is the SP stat used directly in the original; here SP * SPEED_PER_SP pool units/s. */
-export const SPEED_PER_SP = 0.04; // SP 40 -> 3.4, SP 60 -> 4.2, SP 99 -> 5.8 units/s
+export const SPEED_PER_SP = 0.03; // SP 40 -> 2.4, SP 60 -> 3.0, SP 99 -> 4.2 units/s
 /** Base swim speed added to SP * SPEED_PER_SP: compresses SP differences so slow teams stay playable in real time. */
-export const SPEED_BASE = 1.8;
+export const SPEED_BASE = 1.2;
 /** Sprint is a sim extension (no sprint in the original): faster, costs HP. */
 export const SPRINT_MULT = 1.35;
 export const SPRINT_HP_PER_SECOND = 1.5;
@@ -78,7 +83,7 @@ export const ELITE_DEFENSE_EXTRA_RADIUS = origUnits(100);
 /** Stun applied to a player who loses the ball to a tackle / block (original 100 frames). */
 export const BALL_LOST_STUN_FRAMES = 100;
 /** Sim extension: a tackler may not tackle again for this long (one attempt per encounter in the original). */
-export const TACKLE_COOLDOWN_SECONDS = 1.0;
+export const TACKLE_COOLDOWN_SECONDS = 0.6;
 /** Sim extension: a tackler who misses or is evaded is frozen briefly. */
 export const TACKLE_WHIFF_STUN_SECONDS = 0.6;
 
@@ -111,8 +116,8 @@ export const DEFLECT_WINDOW_BASE = 4;
 export const GOALIE_PASSIVE_HP = 30;
 export const SUPER_GOALIE_CHANCE = 60;
 export const SUPER_GOALIE_BONUS = 10;
-export const KEEPER_HOLD_SECONDS = 0.8;
-export const KEEPER_MAX_HOLD_SECONDS = 3.0;
+export const KEEPER_HOLD_SECONDS = 2.0;
+export const KEEPER_MAX_HOLD_SECONDS = 4.0;
 
 // ---------------------------------------------------------------- HP tick (formulas.md section 3)
 export const HP_TICK_EVERY_FRAMES = 3;
@@ -162,19 +167,21 @@ export const FUMBLE_SPEED = 2;
 
 // ---------------------------------------------------------------- AI (formulas.md section 8)
 /** Minimum ticks a receiver keeps the ball before acting again when not pressured. */
-export const AI_MIN_HOLD_TICKS = 45;
+export const AI_MIN_HOLD_TICKS = 150;
+/** Even under pressure a CPU carrier keeps the ball at least this long before passing or shooting. */
+export const AI_PRESSURED_MIN_HOLD_TICKS = 120;
 /** After holding the ball this long the AI carrier forces a shot or pass (no parking). */
-export const AI_MAX_HOLD_TICKS = 150;
+export const AI_MAX_HOLD_TICKS = 420;
 /** Per decision, chance (%) that an unpressured CPU carrier acts, by zone 0..6 (original per waypoint). */
 export const AI_ACT_PCT_BY_ZONE: readonly number[] = [10, 30, 50, 70, 80, 90, 100];
 /** Scale of AI_ACT_PCT_BY_ZONE per decision tick (decisions are far more frequent than waypoints). */
-export const AI_ACT_PCT_SCALE = 0.06;
+export const AI_ACT_PCT_SCALE = 0.008;
 /** Chance (%) to keep dribbling when every defender could be broken, by zone. */
 export const AI_DRIBBLE_PCT_BY_ZONE: readonly number[] = [70, 60, 60, 50, 50, 40, 0];
 /** Shoot weight multiplier of SH by zone: shoot if rand(PA + w) < w. */
 export const AI_SHOT_WEIGHT_BY_ZONE: readonly number[] = [1 / 16, 1 / 8, 1 / 4, 1 / 2, 1, 2, 9];
 /** The AI only shoots when its estimated chance of beating the goalie roll is at least this. */
-export const AI_SHOT_MIN_CHANCE = 0.03;
+export const AI_SHOT_MIN_CHANCE = 0.08;
 /** Supporting teammates offer themselves this far ahead / beside the carrier. */
 export const AI_SUPPORT_AHEAD = 4;
 export const AI_SUPPORT_SIDE = 3.5;

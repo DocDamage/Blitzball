@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { DIFFICULTIES } from "./ai";
-import { EXP_CAP, FRAMES_PER_GAME_SECOND, framesToTicks, RESET_FREEZE_SECONDS, TICK_RATE } from "./constants";
+import {
+  DEFAULT_HALF_SECONDS,
+  EXP_CAP,
+  FRAMES_PER_GAME_SECOND,
+  framesToTicks,
+  RESET_FREEZE_SECONDS,
+  SPEED_BASE,
+  SPEED_PER_SP,
+  TICK_RATE,
+} from "./constants";
 import { FORMATION_IDS, FORMATIONS } from "./formations";
 import { simulateMatch } from "./index";
 import { AI_INPUT, type MatchInput } from "./input";
@@ -37,7 +46,7 @@ describe("full match", () => {
     expect(Date.now() - t0).toBeLessThan(500);
     expect(r.state.phase).toBe("finished");
     expect(r.state.half).toBe(2);
-    expect(r.state.tick).toBeGreaterThanOrEqual(2 * 300 * FRAMES_PER_GAME_SECOND);
+    expect(r.state.tick).toBeGreaterThanOrEqual(2 * DEFAULT_HALF_SECONDS * FRAMES_PER_GAME_SECOND);
     expect(r.score[0] + r.score[1]).toBe(r.events.filter((e) => e.kind === "goal").length);
     const kinds = new Set(r.events.map((e) => e.kind));
     for (const k of ["kickoff", "pass", "shot", "tackle", "half-time", "full-time"]) {
@@ -124,7 +133,7 @@ describe("rules", () => {
   it("moves at a speed proportional to SP and sprinting (sim extension) costs HP", () => {
     const m = playingMatch();
     const tidus = m.player("tidus");
-    expect(m.speedOf(tidus, false)).toBeCloseTo(tidus.def.stats.sp * 0.07, 5);
+    expect(m.speedOf(tidus, false)).toBeCloseTo(SPEED_BASE + tidus.def.stats.sp * SPEED_PER_SP, 5);
     const input: MatchInput = {
       home: { kind: "human", controlledPlayerId: "tidus", move: { x: 1, y: 0, z: 0 }, sprint: true },
       away: { kind: "ai" },
