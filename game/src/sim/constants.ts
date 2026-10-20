@@ -61,8 +61,8 @@ export const PASS_MISS_SPREAD = 0.5;
 export const PASS_ACCURACY_BASE = 5;
 export const CATCH_RADIUS = 1.7;
 export const PASS_OVERSHOOT = 2.5;
-export const BLOCK_REACH_BASE = 1.3;
-export const BLOCK_REACH_PER_BL = 0.12;
+export const BLOCK_REACH_BASE = 1.0;
+export const BLOCK_REACH_PER_BL = 0.1;
 /** Pass "leads" the receiver by this many seconds of their current velocity. */
 export const PASS_LEAD_SECONDS = 0.35;
 
@@ -70,7 +70,7 @@ export const PASS_LEAD_SECONDS = 0.35;
 export const TACKLE_RANGE = 1.9;
 export const TACKLE_HP_COST = 3;
 export const BREAKTHROUGH_HP_COST = 2;
-export const TACKLE_COOLDOWN_SECONDS = 1.0;
+export const TACKLE_COOLDOWN_SECONDS = 1.5;
 export const TACKLED_STUN_SECONDS = 0.45;
 export const TACKLE_WHIFF_STUN_SECONDS = 0.7;
 
@@ -78,15 +78,15 @@ export const TACKLE_WHIFF_STUN_SECONDS = 0.7;
 export const SHOT_BASE_SPEED = 15;
 export const SHOT_SPEED_PER_SH = 0.35;
 export const SHOT_MAX_RANGE = 24;
-export const SHOT_POWER_DECAY_PER_UNIT = 0.12;
+export const SHOT_POWER_DECAY_PER_UNIT = 0.5;
 /** Each blocker in reach subtracts BL * spread * this from the shot power. */
 export const SHOT_BLOCK_FACTOR = 0.45;
 export const SHOT_MISS_SPREAD = 0.55;
 export const SHOT_ACCURACY_BASE = 6;
-export const SAVE_RADIUS_BASE = 2.5;
-export const SAVE_RADIUS_PER_CA = 0.3;
+export const SAVE_RADIUS_BASE = 4.0;
+export const SAVE_RADIUS_PER_CA = 0.35;
 /** Keeper CA is multiplied by this in the save contest. */
-export const KEEPER_SAVE_MULT = 1.0;
+export const KEEPER_SAVE_MULT = 2.0;
 export const KEEPER_HOLD_SECONDS = 0.8;
 export const KEEPER_MAX_HOLD_SECONDS = 3.0;
 
@@ -111,9 +111,19 @@ export const TACKLE_KNOCK_SPEED = 6;
 
 // ---------------------------------------------------------------- AI
 /** Minimum ticks a receiver keeps the ball before passing it on again. */
-export const AI_MIN_HOLD_TICKS = 24;
+export const AI_MIN_HOLD_TICKS = 75;
+/** The AI only shoots when its 0..1 shot-quality estimate is above this. */
+export const AI_SHOT_MIN_QUALITY = 0.3;
+/** AI aims this far inside the goal corners (y / z). */
+export const AI_SHOT_CORNER_INSET_Y = 2.5;
+export const AI_SHOT_CORNER_INSET_Z = 2.0;
 export const AI_PRESS_DISTANCE = 12;
 export const AI_MARK_OFFSET = 2.5;
 export const AI_ATTACK_SHIFT = 0.35;
 export const AI_DEFENSE_SHIFT = -0.3;
 export const AI_LANE_CLEAR_DIST = 4;
+/** After holding the ball this long the AI carrier forces a shot or pass (no parking). */
+export const AI_MAX_HOLD_TICKS = 300;
+/** Keeper follows the ball's y/z by this factor, clamped to +-AI_KEEPER_TRACK_CLAMP units. */
+export const AI_KEEPER_TRACK = 0.4;
+export const AI_KEEPER_TRACK_CLAMP = 3;

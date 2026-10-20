@@ -425,14 +425,14 @@ export class Match {
     this.emit({ kind: "full-time", score: [...s.score] });
   }
 
-  private scoreGoal(by: PlayerState): void {
+  private scoreGoal(by: PlayerState, keeperInReach: boolean): void {
     const s = this.state;
     s.score[by.team]++;
     s.ball.carrier = null;
     s.ball.flight = null;
     s.ball.lastTouch = by.team;
     for (const p of s.players) p.hasBall = false;
-    this.emit({ kind: "goal", by: by.id, team: by.team, score: [...s.score] });
+    this.emit({ kind: "goal", by: by.id, team: by.team, score: [...s.score], keeperInReach });
     if (s.half === 3) this.finish();
     else this.startReset();
   }
@@ -870,7 +870,8 @@ export class Match {
         const crossing = v3(goalX, b.pos.y, b.pos.z);
         const kst = this.effectiveStats(keeper);
         const reach = SAVE_RADIUS_BASE + kst.ca * SAVE_RADIUS_PER_CA;
-        if (this.canContest(keeper) && dist(keeper.pos, crossing) <= reach) {
+        const inReach = this.canContest(keeper) && dist(keeper.pos, crossing) <= reach;
+        if (inReach) {
           const catchTech = this.autoTechnique(keeper, "catch");
           const ca = (kst.ca + (catchTech?.statMods.ca ?? 0)) * KEEPER_SAVE_MULT * this.spread();
           this.tryInflict(keeper, tech);
@@ -880,7 +881,7 @@ export class Match {
             return;
           }
         }
-        this.scoreGoal(this.player(f.from));
+        this.scoreGoal(this.player(f.from), inReach);
         return;
       }
       this.outOfBounds(keeper);

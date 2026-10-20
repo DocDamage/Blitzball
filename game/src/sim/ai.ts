@@ -11,15 +11,23 @@
  */
 
 import {
+  AI_KEEPER_TRACK,
+  AI_KEEPER_TRACK_CLAMP,
   AI_LANE_CLEAR_DIST,
   AI_MARK_OFFSET,
+  AI_MAX_HOLD_TICKS,
   AI_MIN_HOLD_TICKS,
   AI_PRESS_DISTANCE,
+  AI_SHOT_CORNER_INSET_Y,
+  AI_SHOT_CORNER_INSET_Z,
+  AI_SHOT_MIN_QUALITY,
   GOAL_HALF_DEPTH,
   GOAL_HALF_HEIGHT,
   KEEPER_HOLD_SECONDS,
+  KEEPER_SAVE_MULT,
   POOL_HALF,
   SHOT_MAX_RANGE,
+  SHOT_POWER_DECAY_PER_UNIT,
   TICK_RATE,
 } from "./constants";
 import { FORMATIONS } from "./formations";
@@ -116,11 +124,12 @@ export function shotQuality(m: Match, p: PlayerState): number {
   if (d > SHOT_MAX_RANGE) return 0;
   const range = 1 - d / SHOT_MAX_RANGE;
   const toGoal = normalize(sub(goal, p.pos));
-  const angle = clamp01((dot(toGoal, v3(m.attackDir(p.team), 0, 0)) - 0.3) / 0.7);
+  const angle = clamp01((dot(toGoal, v3(m.attackDir(p.team), 0, 0)) - 0.1) / 0.9);
   const keeper = m.keeperOf((1 - p.team) as 0 | 1);
-  const sh = m.effectiveStats(p).sh;
-  const ca = m.effectiveStats(keeper).ca;
-  const strength = sh / (sh + ca);
+  // expected power at the goal line vs the keeper's effective catch
+  const sh = Math.max(0, m.effectiveStats(p).sh - d * SHOT_POWER_DECAY_PER_UNIT);
+  const ca = m.effectiveStats(keeper).ca * KEEPER_SAVE_MULT;
+  const strength = sh / (sh + ca + 0.01);
   let blockers = 0;
   for (const q of m.opponentsOf(p.team)) {
     if (q.role === "GK") continue;
@@ -143,8 +152,8 @@ function distToLane(q: Vec3, a: Vec3, b: Vec3): number {
 export function bestShotAim(m: Match, p: PlayerState): Vec3 {
   const gx = POOL_HALF.x * m.attackDir(p.team);
   const keeper = m.keeperOf((1 - p.team) as 0 | 1);
-  const cy = GOAL_HALF_HEIGHT - 1.5;
-  const cz = GOAL_HALF_DEPTH - 1.2;
+  const cy = GOAL_HALF_HEIGHT - AI_SHOT_CORNER_INSET_Y;
+  const cz = GOAL_HALF_DEPTH - AI_SHOT_CORNER_INSET_Z;
   let best = v3(gx, 0, 0);
   let bestD = -1;
   for (const y of [-cy, cy]) {
@@ -174,7 +183,7 @@ export function passQuality(m: Match, p: PlayerState, t: PlayerState): number {
   for (const q of opps) avgBl += m.effectiveStats(q).bl;
   avgBl /= Math.max(1, opps.length);
   const strength = pa / (pa + avgBl);
-  let q = lane * 0.45 + pressure * 0.25 + advance * 0.3 + 0.15;
+  let q = lane * 0.45 + pressure * 0.25 + advance * 0.3 + 0.05;
   q *= 0.6 + strength * 0.8;
   if (d > 25) q -= 0.25;
   if (t.role === "GK") q -= 0.4;
@@ -241,10 +250,10 @@ function carrierIntent(m: Match, p: PlayerState, profile: TeamAiProfile): Player
     dribbleU -= 0.35 * (1 - st.en / (st.en + at + 0.01));
   }
 
-  if (sq > 0.12 && shootU >= passU && shootU >= dribbleU) {
+  if (sq > AI_SHOT_MIN_QUALITY && shootU >= passU && shootU >= dribbleU) {
     return { sprint: false, action: { kind: "shoot", aim: bestShotAim(m, p), techniqueId: pickTechnique(m, p, "shot", w)?.id } };
   }
-  if (bestPass && bestPq > 0.2 && passU > dribbleU) {
+  if (bestPass && bestPq > 0.3 && passU > dribbleU) {
     return {
       moveTo: p.pos,
       sprint: false,

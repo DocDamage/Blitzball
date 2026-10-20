@@ -1,0 +1,1231 @@
+{
+ "source": "event bltz0200 (fid 06731) new-game init",
+ "teams": [
+  {
+   "id": 0,
+   "name": "Luca Goers",
+   "players": [
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    null,
+    null
+   ]
+  },
+  {
+   "id": 1,
+   "name": "Kilika Beasts",
+   "players": [
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    null,
+    null
+   ]
+  },
+  {
+   "id": 2,
+   "name": "Al Bhed Psyches",
+   "players": [
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    null,
+    null
+   ]
+  },
+  {
+   "id": 3,
+   "name": "Ronso Fangs",
+   "players": [
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    null,
+    null
+   ]
+  },
+  {
+   "id": 4,
+   "name": "Guado Glories",
+   "players": [
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    null,
+    null
+   ]
+  },
+  {
+   "id": 5,
+   "name": "Besaid Aurochs",
+   "players": [
+    0,
+    2,
+    3,
+    4,
+    5,
+    6,
+    null,
+    null
+   ]
+  }
+ ],
+ "players": [
+  {
+   "id": 0,
+   "level": 2,
+   "exp": 11,
+   "techSlots": 0,
+   "contractGames": 255,
+   "costPerGame": 1000,
+   "equippedTechs": [
+    3,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 2,
+   "learnedTechsPage2": 0,
+   "team": 5,
+   "teamSlot": 0
+  },
+  {
+   "id": 1,
+   "level": 3,
+   "exp": 15,
+   "techSlots": 1,
+   "contractGames": 0,
+   "costPerGame": 1,
+   "equippedTechs": [
+    5,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 32,
+   "learnedTechsPage2": 0,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 2,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 15,
+   "costPerGame": 30,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 8388864,
+   "learnedTechsPage2": 0,
+   "team": 5,
+   "teamSlot": 1
+  },
+  {
+   "id": 3,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 10,
+   "costPerGame": 40,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 16384,
+   "learnedTechsPage2": 0,
+   "team": 5,
+   "teamSlot": 2
+  },
+  {
+   "id": 4,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 8,
+   "costPerGame": 10,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 0,
+   "learnedTechsPage2": 0,
+   "team": 5,
+   "teamSlot": 3
+  },
+  {
+   "id": 5,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 7,
+   "costPerGame": 50,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 67108864,
+   "learnedTechsPage2": 4194304,
+   "team": 5,
+   "teamSlot": 4
+  },
+  {
+   "id": 6,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 16,
+   "costPerGame": 60,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 0,
+   "learnedTechsPage2": 0,
+   "team": 5,
+   "teamSlot": 5
+  },
+  {
+   "id": 7,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 10,
+   "costPerGame": 70,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 8388640,
+   "learnedTechsPage2": 0,
+   "team": 0,
+   "teamSlot": 0
+  },
+  {
+   "id": 8,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 17,
+   "costPerGame": 120,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 75497504,
+   "learnedTechsPage2": 4194304,
+   "team": 0,
+   "teamSlot": 1
+  },
+  {
+   "id": 9,
+   "level": 3,
+   "exp": 19,
+   "techSlots": 1,
+   "contractGames": 20,
+   "costPerGame": 200,
+   "equippedTechs": [
+    26,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 67108864,
+   "learnedTechsPage2": 1048576,
+   "team": 0,
+   "teamSlot": 2
+  },
+  {
+   "id": 10,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 18,
+   "costPerGame": 100,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 67108864,
+   "learnedTechsPage2": 0,
+   "team": 0,
+   "teamSlot": 3
+  },
+  {
+   "id": 11,
+   "level": 2,
+   "exp": 10,
+   "techSlots": 0,
+   "contractGames": 19,
+   "costPerGame": 110,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 32768,
+   "learnedTechsPage2": 32,
+   "team": 0,
+   "teamSlot": 4
+  },
+  {
+   "id": 12,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 22,
+   "costPerGame": 10,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 0,
+   "learnedTechsPage2": 0,
+   "team": 0,
+   "teamSlot": 5
+  },
+  {
+   "id": 13,
+   "level": 3,
+   "exp": 15,
+   "techSlots": 1,
+   "contractGames": 22,
+   "costPerGame": 70,
+   "equippedTechs": [
+    5,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 8388640,
+   "learnedTechsPage2": 256,
+   "team": 1,
+   "teamSlot": 0
+  },
+  {
+   "id": 14,
+   "level": 3,
+   "exp": 13,
+   "techSlots": 1,
+   "contractGames": 30,
+   "costPerGame": 120,
+   "equippedTechs": [
+    5,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 2080,
+   "learnedTechsPage2": 256,
+   "team": 1,
+   "teamSlot": 1
+  },
+  {
+   "id": 15,
+   "level": 3,
+   "exp": 19,
+   "techSlots": 1,
+   "contractGames": 8,
+   "costPerGame": 50,
+   "equippedTechs": [
+    14,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 49152,
+   "learnedTechsPage2": 134217984,
+   "team": 1,
+   "teamSlot": 2
+  },
+  {
+   "id": 16,
+   "level": 7,
+   "exp": 56,
+   "techSlots": 2,
+   "contractGames": 7,
+   "costPerGame": 50,
+   "equippedTechs": [
+    26,
+    40,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 67108864,
+   "learnedTechsPage2": 137364480,
+   "team": 1,
+   "teamSlot": 3
+  },
+  {
+   "id": 17,
+   "level": 2,
+   "exp": 7,
+   "techSlots": 0,
+   "contractGames": 15,
+   "costPerGame": 90,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 0,
+   "learnedTechsPage2": 3145732,
+   "team": 1,
+   "teamSlot": 4
+  },
+  {
+   "id": 18,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 18,
+   "costPerGame": 150,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 0,
+   "learnedTechsPage2": 537395200,
+   "team": 1,
+   "teamSlot": 5
+  },
+  {
+   "id": 19,
+   "level": 3,
+   "exp": 15,
+   "techSlots": 1,
+   "contractGames": 10,
+   "costPerGame": 180,
+   "equippedTechs": [
+    8,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 545390848,
+   "learnedTechsPage2": 0,
+   "team": 2,
+   "teamSlot": 0
+  },
+  {
+   "id": 20,
+   "level": 3,
+   "exp": 13,
+   "techSlots": 1,
+   "contractGames": 4,
+   "costPerGame": 130,
+   "equippedTechs": [
+    17,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 1635909632,
+   "learnedTechsPage2": 262144,
+   "team": 2,
+   "teamSlot": 1
+  },
+  {
+   "id": 21,
+   "level": 3,
+   "exp": 20,
+   "techSlots": 1,
+   "contractGames": 9,
+   "costPerGame": 30,
+   "equippedTechs": [
+    29,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 537001984,
+   "learnedTechsPage2": 262144,
+   "team": 2,
+   "teamSlot": 2
+  },
+  {
+   "id": 22,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 10,
+   "costPerGame": 50,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 536870912,
+   "learnedTechsPage2": 2097152,
+   "team": 2,
+   "teamSlot": 3
+  },
+  {
+   "id": 23,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 8,
+   "costPerGame": 20,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 0,
+   "learnedTechsPage2": 1048576,
+   "team": 2,
+   "teamSlot": 4
+  },
+  {
+   "id": 24,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 24,
+   "costPerGame": 100,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 0,
+   "learnedTechsPage2": 0,
+   "team": 2,
+   "teamSlot": 5
+  },
+  {
+   "id": 25,
+   "level": 3,
+   "exp": 13,
+   "techSlots": 1,
+   "contractGames": 30,
+   "costPerGame": 3500,
+   "equippedTechs": [
+    23,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 8390664,
+   "learnedTechsPage2": 262148,
+   "team": 3,
+   "teamSlot": 0
+  },
+  {
+   "id": 26,
+   "level": 3,
+   "exp": 13,
+   "techSlots": 1,
+   "contractGames": 32,
+   "costPerGame": 200,
+   "equippedTechs": [
+    11,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 8390656,
+   "learnedTechsPage2": 278528,
+   "team": 3,
+   "teamSlot": 1
+  },
+  {
+   "id": 27,
+   "level": 3,
+   "exp": 13,
+   "techSlots": 1,
+   "contractGames": 35,
+   "costPerGame": 150,
+   "equippedTechs": [
+    21,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 2097152,
+   "learnedTechsPage2": 1064964,
+   "team": 3,
+   "teamSlot": 2
+  },
+  {
+   "id": 28,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 28,
+   "costPerGame": 650,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 2113536,
+   "learnedTechsPage2": 2097164,
+   "team": 3,
+   "teamSlot": 3
+  },
+  {
+   "id": 29,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 39,
+   "costPerGame": 450,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 536870912,
+   "learnedTechsPage2": 16428,
+   "team": 3,
+   "teamSlot": 4
+  },
+  {
+   "id": 30,
+   "level": 3,
+   "exp": 13,
+   "techSlots": 1,
+   "contractGames": 30,
+   "costPerGame": 300,
+   "equippedTechs": [
+    49,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 0,
+   "learnedTechsPage2": 611328,
+   "team": 3,
+   "teamSlot": 5
+  },
+  {
+   "id": 31,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 15,
+   "costPerGame": 1000,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 1196032,
+   "learnedTechsPage2": 87040,
+   "team": 4,
+   "teamSlot": 0
+  },
+  {
+   "id": 32,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 5,
+   "costPerGame": 90,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 3145728,
+   "learnedTechsPage2": 0,
+   "team": 4,
+   "teamSlot": 1
+  },
+  {
+   "id": 33,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 14,
+   "costPerGame": 100,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 1196032,
+   "learnedTechsPage2": 134217728,
+   "team": 4,
+   "teamSlot": 2
+  },
+  {
+   "id": 34,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 10,
+   "costPerGame": 120,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 68304896,
+   "learnedTechsPage2": 1048576,
+   "team": 4,
+   "teamSlot": 3
+  },
+  {
+   "id": 35,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 6,
+   "costPerGame": 10,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 603979776,
+   "learnedTechsPage2": 136314884,
+   "team": 4,
+   "teamSlot": 4
+  },
+  {
+   "id": 36,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 19,
+   "costPerGame": 80,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 1196032,
+   "learnedTechsPage2": 537395200,
+   "team": 4,
+   "teamSlot": 5
+  },
+  {
+   "id": 37,
+   "level": 5,
+   "exp": 32,
+   "techSlots": 1,
+   "contractGames": 0,
+   "costPerGame": 100,
+   "equippedTechs": [
+    15,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 32768,
+   "learnedTechsPage2": 37748992,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 38,
+   "level": 5,
+   "exp": 33,
+   "techSlots": 1,
+   "contractGames": 0,
+   "costPerGame": 320,
+   "equippedTechs": [
+    36,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 131344,
+   "learnedTechsPage2": 402653280,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 39,
+   "level": 3,
+   "exp": 13,
+   "techSlots": 1,
+   "contractGames": 0,
+   "costPerGame": 300,
+   "equippedTechs": [
+    31,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 739246080,
+   "learnedTechsPage2": 1048614,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 40,
+   "level": 3,
+   "exp": 13,
+   "techSlots": 1,
+   "contractGames": 0,
+   "costPerGame": 80,
+   "equippedTechs": [
+    32,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 67502080,
+   "learnedTechsPage2": 4,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 41,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 60,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 2824,
+   "learnedTechsPage2": 0,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 42,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 100,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 58720320,
+   "learnedTechsPage2": 196608,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 43,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 160,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 526368,
+   "learnedTechsPage2": 16777216,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 44,
+   "level": 5,
+   "exp": 32,
+   "techSlots": 1,
+   "contractGames": 0,
+   "costPerGame": 200,
+   "equippedTechs": [
+    37,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 147456,
+   "learnedTechsPage2": 2184420,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 45,
+   "level": 7,
+   "exp": 57,
+   "techSlots": 2,
+   "contractGames": 0,
+   "costPerGame": 900,
+   "equippedTechs": [
+    23,
+    10,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 8389632,
+   "learnedTechsPage2": 134219776,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 46,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 150,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 1589248,
+   "learnedTechsPage2": 8405248,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 47,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 150,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 603979776,
+   "learnedTechsPage2": 68157444,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 48,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 340,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 603979776,
+   "learnedTechsPage2": 2146320,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 49,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 400,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 524288,
+   "learnedTechsPage2": 0,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 50,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 200,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 0,
+   "learnedTechsPage2": 536870912,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 51,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 130,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 268435456,
+   "learnedTechsPage2": 8192,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 52,
+   "level": 4,
+   "exp": 22,
+   "techSlots": 1,
+   "contractGames": 0,
+   "costPerGame": 320,
+   "equippedTechs": [
+    13,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 8192,
+   "learnedTechsPage2": 0,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 53,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 190,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 67109056,
+   "learnedTechsPage2": 44,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 54,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 150,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 3162112,
+   "learnedTechsPage2": 134217984,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 55,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 100,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 0,
+   "learnedTechsPage2": 558080,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 56,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 500,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 4341760,
+   "learnedTechsPage2": 49152,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 57,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 210,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 1069056,
+   "learnedTechsPage2": 2052,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 58,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 600,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 65536,
+   "learnedTechsPage2": 1049088,
+   "team": null,
+   "teamSlot": null
+  },
+  {
+   "id": 59,
+   "level": 1,
+   "exp": 0,
+   "techSlots": 0,
+   "contractGames": 0,
+   "costPerGame": 200,
+   "equippedTechs": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "learnedTechsPage1": 613566752,
+   "learnedTechsPage2": 87332,
+   "team": null,
+   "teamSlot": null
+  }
+ ]
+}

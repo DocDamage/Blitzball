@@ -80,9 +80,11 @@ def main():
             "statsLv1": {k: stat_at(growth[k][i * 4:i * 4 + 4], 1, k == "HP") for k in growth},
             "statsLv99": {k: stat_at(growth[k][i * 4:i * 4 + 4], 99, k == "HP") for k in growth},
             "modelIndex": model_idx[i],
-            "techWordsA": [words_a[i * 4 + j] & 0xFFFFFFFF for j in range(4)],
-            "techWordsB": [words_b[i * 4 + j] & 0xFFFFFFFF for j in range(4)],
-            "triple": triple[i * 3:i * 3 + 3],
+            # Learnable techniques in four tiers (bit b of page-1 word = tech b; bit b of page-2 word = tech 30+b).
+            # Tier thresholds (3 levels) open tiers 2..4; tier 1 is available from the start. See formats.md.
+            "learnableTiers": [sorted([b for b in range(1, 32) if (words_a[i * 4 + j] >> b) & 1] +
+                                      [30 + b for b in range(2, 32) if (words_b[i * 4 + j] >> b) & 1]) for j in range(4)],
+            "tierLevels": triple[i * 3:i * 3 + 3],
         })
     techniques = [{"id": 0, "name": "(none)"}]
     for t in range(1, 61):

@@ -19,9 +19,9 @@ export const BESAID_AUROCHS: TeamDef = {
   personality: "balanced",
   players: [
     p("tidus", "Tidus", "aurochs", { hp: 90, en: 5, at: 3, pa: 5, bl: 5, sh: 11, ca: 1, sp: 60 }, ["sphere-shot"]),
-    p("datto", "Datto", "aurochs", { hp: 95, en: 6, at: 3, pa: 6, bl: 4, sh: 7, ca: 1, sp: 62 }, ["venom-pass"]),
-    p("letty", "Letty", "aurochs", { hp: 100, en: 6, at: 4, pa: 7, bl: 5, sh: 5, ca: 1, sp: 52 }),
-    p("jassu", "Jassu", "aurochs", { hp: 110, en: 7, at: 5, pa: 5, bl: 7, sh: 3, ca: 1, sp: 55 }, ["nap-tackle"]),
+    p("datto", "Datto", "aurochs", { hp: 95, en: 6, at: 3, pa: 6, bl: 4, sh: 8, ca: 1, sp: 62 }, ["venom-pass"]),
+    p("letty", "Letty", "aurochs", { hp: 100, en: 6, at: 4, pa: 7, bl: 6, sh: 5, ca: 1, sp: 52 }),
+    p("jassu", "Jassu", "aurochs", { hp: 110, en: 7, at: 6, pa: 5, bl: 7, sh: 3, ca: 1, sp: 55 }, ["nap-tackle"]),
     p("botta", "Botta", "aurochs", { hp: 105, en: 6, at: 6, pa: 4, bl: 7, sh: 3, ca: 1, sp: 50 }, ["venom-tackle"]),
     p("keepa", "Keepa", "aurochs", { hp: 180, en: 4, at: 2, pa: 4, bl: 4, sh: 1, ca: 7, sp: 40 }),
   ],
@@ -33,12 +33,12 @@ export const LUCA_GOERS: TeamDef = {
   formation: "attack",
   personality: "aggressive",
   players: [
-    p("bickson", "Bickson", "goers", { hp: 140, en: 7, at: 5, pa: 7, bl: 6, sh: 20, ca: 1, sp: 60 }, ["sphere-shot", "wither-shot"]),
-    p("abus", "Abus", "goers", { hp: 130, en: 6, at: 5, pa: 8, bl: 6, sh: 15, ca: 1, sp: 58 }, ["venom-shot"]),
-    p("graav", "Graav", "goers", { hp: 150, en: 8, at: 6, pa: 9, bl: 7, sh: 7, ca: 1, sp: 56 }, ["nap-pass"]),
-    p("doram", "Doram", "goers", { hp: 170, en: 9, at: 8, pa: 6, bl: 9, sh: 3, ca: 1, sp: 54 }, ["venom-tackle"]),
-    p("balgerda", "Balgerda", "goers", { hp: 160, en: 9, at: 8, pa: 5, bl: 9, sh: 3, ca: 1, sp: 52 }, ["wither-tackle"]),
-    p("raudy", "Raudy", "goers", { hp: 220, en: 5, at: 3, pa: 5, bl: 5, sh: 1, ca: 10, sp: 45 }, ["super-goalie"]),
+    p("bickson", "Bickson", "goers", { hp: 120, en: 6, at: 4, pa: 6, bl: 5, sh: 18, ca: 1, sp: 60 }, ["sphere-shot", "wither-shot"]),
+    p("abus", "Abus", "goers", { hp: 110, en: 6, at: 4, pa: 6, bl: 5, sh: 14, ca: 1, sp: 58 }, ["venom-shot"]),
+    p("graav", "Graav", "goers", { hp: 130, en: 6, at: 5, pa: 7, bl: 6, sh: 7, ca: 1, sp: 56 }, ["nap-pass"]),
+    p("doram", "Doram", "goers", { hp: 150, en: 7, at: 7, pa: 5, bl: 7, sh: 3, ca: 1, sp: 54 }, ["venom-tackle"]),
+    p("balgerda", "Balgerda", "goers", { hp: 140, en: 7, at: 7, pa: 5, bl: 7, sh: 3, ca: 1, sp: 52 }, ["wither-tackle"]),
+    p("raudy", "Raudy", "goers", { hp: 200, en: 5, at: 3, pa: 5, bl: 5, sh: 1, ca: 9, sp: 45 }, ["super-goalie"]),
   ],
 };
 

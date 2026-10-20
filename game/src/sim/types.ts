@@ -181,7 +181,7 @@ export type MatchEvent = EventBase &
     | { kind: "shot"; by: string; team: 0 | 1; power: number; techniqueId?: string }
     | { kind: "shot-blocked"; by: string; blocker: string; team: 0 | 1 }
     | { kind: "save"; keeper: string; shooter: string; team: 0 | 1 }
-    | { kind: "goal"; by: string; team: 0 | 1; score: [number, number] }
+    | { kind: "goal"; by: string; team: 0 | 1; score: [number, number]; keeperInReach: boolean }
     | { kind: "tackle"; by: string; on: string; team: 0 | 1; techniqueId?: string }
     | { kind: "breakthrough"; carrier: string; tackler: string; team: 0 | 1 }
     | { kind: "technique-used"; by: string; techniqueId: string; team: 0 | 1 }
